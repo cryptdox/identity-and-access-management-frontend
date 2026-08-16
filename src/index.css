@@ -1,0 +1,106 @@
+@import 'tailwindcss';
+@import './theme/tokens.css';
+
+@theme {
+  /* Semantic colors — resolve through the CSS variables in theme/tokens.css so
+     `bg-primary`, `text-danger`, etc. instantly reflect the active data-theme. */
+  --color-primary: var(--tk-primary);
+  --color-secondary: var(--tk-secondary);
+  --color-success: var(--tk-success);
+  --color-warning: var(--tk-warning);
+  --color-danger: var(--tk-danger);
+  --color-info: var(--tk-info);
+
+  --color-bg: var(--tk-bg);
+  --color-surface: var(--tk-surface);
+  --color-surface-alt: var(--tk-surface-alt);
+  --color-sidebar: var(--tk-sidebar);
+  --color-sidebar-text: var(--tk-sidebar-text);
+  --color-border: var(--tk-border);
+  --color-text: var(--tk-text);
+  --color-text-secondary: var(--tk-text-secondary);
+  --color-warning-text: var(--tk-warning-text);
+
+  /* Raw brand palette escape hatch — for one-off decorative uses only. */
+  --color-brand-protoss-pylon: #00a8ff;
+  --color-brand-periwinkle: #9c88ff;
+  --color-brand-rise-n-shine: #fbc531;
+  --color-brand-download-progress: #4cd137;
+  --color-brand-seabrook: #487eb0;
+  --color-brand-vanadyl-blue: #0097e6;
+  --color-brand-matt-purple: #8c7ae6;
+  --color-brand-nanohanacha-gold: #e1b12c;
+  --color-brand-skirret-green: #44bd32;
+  --color-brand-naval: #40739e;
+  --color-brand-nasturcian-flower: #e84118;
+  --color-brand-lynx-white: #f5f6fa;
+  --color-brand-blueberry-soda: #7f8fa6;
+  --color-brand-mazarine-blue: #273c75;
+  --color-brand-blue-nights: #353b48;
+  --color-brand-harley-davidson-orange: #c23616;
+  --color-brand-hint-of-pensive: #dcdde1;
+  --color-brand-chain-gang-gray: #718093;
+  --color-brand-pico-void: #192a56;
+  --color-brand-electromagnetic: #2f3640;
+
+  --animate-fade-in: fade-in 0.25s ease-out;
+  --animate-slide-up: slide-up 0.25s ease-out;
+  --animate-pulse-soft: pulse-soft 1.6s ease-in-out infinite;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  html[data-theme='dark'] {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-bg text-text font-sans antialiased;
+  }
+  ::selection {
+    @apply bg-primary/20;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+}

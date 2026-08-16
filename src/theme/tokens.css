@@ -1,0 +1,55 @@
+/**
+ * Semantic design tokens, mapped from the brand palette in colors.ts.
+ * Keep these two files in sync — this one drives Tailwind utilities (see index.css's
+ * @theme block), colors.ts drives any JS/inline-style usage.
+ */
+:root,
+:root[data-theme='light'] {
+  --tk-primary: #0097e6; /* Vanadyl Blue */
+  --tk-secondary: #8c7ae6; /* Matt Purple */
+  --tk-success: #44bd32; /* Skirret Green */
+  --tk-warning: #e1b12c; /* Nanohanacha Gold */
+  --tk-danger: #c23616; /* Harley Davidson Orange */
+  --tk-info: #40739e; /* Naval */
+
+  --tk-bg: #f5f6fa; /* Lynx White */
+  --tk-surface: #ffffff;
+  --tk-surface-alt: #f5f6fa;
+  --tk-sidebar: #273c75; /* Mazarine Blue */
+  --tk-sidebar-text: #f5f6fa;
+  --tk-border: #dcdde1; /* Hint Of Pensive */
+  --tk-text: #2f3640; /* Electromagnetic */
+  --tk-text-secondary: #718093; /* Chain Gang Gray */
+
+  --tk-warning-text: #2f3640;
+  --tk-shadow: 0 1px 2px rgba(39, 60, 117, 0.06), 0 1px 3px rgba(39, 60, 117, 0.08);
+}
+
+:root[data-theme='dark'] {
+  --tk-primary: #00a8ff; /* Protoss Pylon */
+  --tk-secondary: #9c88ff; /* Periwinkle */
+  --tk-success: #4cd137; /* Download Progress */
+  --tk-warning: #fbc531; /* Rise N Shine */
+  --tk-danger: #e84118; /* Nasturcian Flower */
+  --tk-info: #487eb0; /* Seabrook */
+
+  --tk-bg: #2f3640; /* Electromagnetic */
+  --tk-surface: #353b48; /* Blue Nights */
+  --tk-surface-alt: #273c75; /* Mazarine Blue */
+  --tk-sidebar: #192a56; /* Pico Void */
+  --tk-sidebar-text: #f5f6fa;
+  --tk-border: #353b48; /* Blue Nights */
+  --tk-text: #f5f6fa; /* Lynx White */
+  --tk-text-secondary: #7f8fa6; /* Blueberry Soda */
+
+  --tk-warning-text: #2f3640;
+  --tk-shadow: 0 1px 2px rgba(0, 0, 0, 0.24), 0 1px 3px rgba(0, 0, 0, 0.32);
+}
+
+/* Theme changes are instant on data-theme swap; this transition softens surface/text
+   color shifts without animating layout-affecting properties. */
+* {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 180ms;
+  transition-timing-function: ease;
+}

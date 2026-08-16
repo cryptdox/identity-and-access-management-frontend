@@ -1,0 +1,21 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "groups": "Groups",
+    "roles": "Roles",
+    "clients": "Clients",
+    "sessions": "Sessions",
+    "tokens": "Refresh Tokens",
+    "events": "Events",
+    "settings": "Settings"
+  },
+  "actions": {
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search"
+  }
+}
