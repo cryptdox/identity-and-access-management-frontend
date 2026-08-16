@@ -30,9 +30,13 @@ export interface CanOptions {
 /**
  * Mirrors the exact string format built server-side in AuthService.setProfilePermission:
  * `${clientId.toUpperCase()}:${resourceName}:${action}:${resourceType}`.
+ *
+ * Takes a Set (not string[]) so repeated calls — one per guarded nav item, row action,
+ * or route — are an O(1) lookup rather than an O(n) array scan; see usePermission.ts
+ * for where that Set is memoized off the (rarely-changing) permissions array.
  */
 export function can(
-  permissions: string[],
+  permissions: ReadonlySet<string>,
   resource: ResourceName,
   action: TypeAction,
   opts: CanOptions = {},
@@ -40,5 +44,5 @@ export function can(
   const clientId = (opts.clientId ?? DEFAULT_CLIENT_ID).toUpperCase()
   const resourceType = opts.resourceType ?? TypeResource.API_ENDPOINT
   const needle = `${clientId}:${resource}:${action}:${resourceType}`
-  return permissions.includes(needle)
+  return permissions.has(needle)
 }

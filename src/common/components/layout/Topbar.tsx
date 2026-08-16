@@ -1,23 +1,12 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Sun, Moon, ChevronDown, LogOut, User as UserIcon, Languages } from 'lucide-react'
 import { useTheme } from '@/theme/ThemeProvider'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
-import { setLanguage, type Language } from '@/app/preferencesSlice'
+import { setLanguage, SUPPORTED_LANGUAGES } from '@/app/preferencesSlice'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useLogout } from '@/features/auth/hooks/useLogout'
-
-function useClickOutside(onOutside: () => void) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) onOutside()
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [onOutside])
-  return ref
-}
+import { useClickOutside } from '@/common/hooks/useClickOutside'
 
 export function Topbar() {
   const { mode, toggle } = useTheme()
@@ -28,9 +17,11 @@ export function Topbar() {
   const { logout } = useLogout()
 
   const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useClickOutside(() => setMenuOpen(false))
+  const menuRef = useClickOutside<HTMLDivElement>(() => setMenuOpen(false))
 
-  function changeLanguage(next: Language) {
+  function cycleLanguage() {
+    const currentIndex = SUPPORTED_LANGUAGES.indexOf(language)
+    const next = SUPPORTED_LANGUAGES[(currentIndex + 1) % SUPPORTED_LANGUAGES.length]
     dispatch(setLanguage(next))
     void i18n.changeLanguage(next)
   }
@@ -39,7 +30,7 @@ export function Topbar() {
     <header className="flex h-16 items-center justify-end gap-2 border-b border-border bg-surface px-6">
       <button
         type="button"
-        onClick={() => changeLanguage(language === 'en' ? 'bn' : 'en')}
+        onClick={cycleLanguage}
         className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-alt"
         aria-label="Toggle language"
       >

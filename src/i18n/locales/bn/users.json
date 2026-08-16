@@ -1,0 +1,20 @@
+{
+  "list.title": "ব্যবহারকারী",
+  "list.description": "এই রিয়েলমের ব্যবহারকারীদের পরিচালনা করুন।",
+  "list.searchPlaceholder": "ইউজারনেম বা ইমেইল দিয়ে খুঁজুন…",
+  "list.empty": "এখনও কোনো ব্যবহারকারী নেই।",
+  "new": "নতুন ব্যবহারকারী",
+  "create.title": "নতুন ব্যবহারকারী",
+  "create.description": "এই রিয়েলমে একজন ব্যবহারকারী যোগ করুন।",
+  "tabs.profile": "প্রোফাইল",
+  "tabs.attributes": "অ্যাট্রিবিউট",
+  "tabs.credentials": "ক্রেডেনশিয়াল",
+  "tabs.sessions": "সেশন",
+  "enableUser": "ব্যবহারকারী সক্রিয় করুন",
+  "disableUser": "ব্যবহারকারী নিষ্ক্রিয় করুন",
+  "deleteUser": "ব্যবহারকারী মুছুন",
+  "status.enabled": "সক্রিয়",
+  "status.disabled": "নিষ্ক্রিয়",
+  "status.verified": "যাচাইকৃত",
+  "status.unverified": "অযাচাইকৃত"
+}

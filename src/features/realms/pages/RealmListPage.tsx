@@ -1,17 +1,31 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Building2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Plus } from 'lucide-react'
 import { useListRealmsQuery } from '@/api/endpoints/realm.api'
 import { usePagination } from '@/common/hooks/usePagination'
+import { useDebounce } from '@/common/hooks/useDebounce'
 import { PageHeader } from '@/common/components/ui/PageHeader'
 import { DataTable, type DataTableColumn } from '@/common/components/ui/DataTable'
 import { Badge } from '@/common/components/ui/Badge'
 import { Button } from '@/common/components/ui/Button'
+import { formatDate } from '@/common/utils/formatDate'
 import type { Realm } from '@/features/realms/realm.types'
 
 export default function RealmListPage() {
+  const { t } = useTranslation('realms')
   const navigate = useNavigate()
   const { params, page, setPage, setSearch, state } = usePagination()
+  const [searchInput, setSearchInput] = useState('')
+  const debouncedSearch = useDebounce(searchInput, 300)
   const { data, isFetching } = useListRealmsQuery(params)
+
+  useEffect(() => {
+    setSearch(debouncedSearch)
+    // setSearch's identity is stable (useCallback with no deps in usePagination), so
+    // this only re-runs when the debounced value actually changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch])
 
   const columns: DataTableColumn<Realm>[] = [
     { key: 'name', header: 'Realm', render: (r) => <span className="font-medium">{r.name}</span> },
@@ -20,17 +34,17 @@ export default function RealmListPage() {
       header: 'Status',
       render: (r) => <Badge tone={r.enabled ? 'success' : 'neutral'}>{r.enabled ? 'Enabled' : 'Disabled'}</Badge>,
     },
-    { key: 'createdAt', header: 'Created', render: (r) => (r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—') },
+    { key: 'createdAt', header: 'Created', render: (r) => formatDate(r.createdAt) },
   ]
 
   return (
     <div>
       <PageHeader
-        title="Realms"
-        description="Tenants in this IAM instance — pick one to manage its users, roles, and clients."
+        title={t('list.title')}
+        description={t('list.description')}
         actions={
           <Button size="sm" onClick={() => navigate('/realms/new')}>
-            <Plus className="size-4" /> New realm
+            <Plus className="size-4" /> {t('new')}
           </Button>
         }
       />
@@ -38,9 +52,9 @@ export default function RealmListPage() {
       <div className="mb-4 max-w-xs">
         <input
           type="search"
-          placeholder="Search realms…"
-          defaultValue={state.search}
-          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t('list.searchPlaceholder')}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           className="h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-text placeholder:text-text-secondary/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       </div>
@@ -54,28 +68,9 @@ export default function RealmListPage() {
         limit={state.limit}
         total={data?.data?.total ?? 0}
         onPageChange={setPage}
-        emptyMessage="No realms yet."
+        onRowClick={(realm) => navigate(`/r/${realm.realmId}/dashboard`)}
+        emptyMessage={t('list.empty')}
       />
-
-      {!isFetching && (data?.data?.items.length ?? 0) > 0 && (
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {data?.data?.items.map((realm) => (
-            <button
-              key={realm.realmId}
-              onClick={() => navigate(`/r/${realm.realmId}/dashboard`)}
-              className="animate-fade-in flex items-center gap-3 rounded-xl border border-border bg-surface p-4 text-left transition-shadow hover:shadow-md"
-            >
-              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Building2 className="size-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="truncate font-medium text-text">{realm.name}</p>
-                <p className="text-xs text-text-secondary">Open dashboard →</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   )
 }

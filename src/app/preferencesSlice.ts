@@ -1,7 +1,12 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { ThemeMode } from '@/theme/colors'
 
-export type Language = 'en' | 'bn'
+/** Single source of truth for supported languages — i18n/index.ts's resources map
+ * must have a matching entry for each. Anything that cycles/selects a language
+ * (e.g. Topbar's language switcher) should iterate this list rather than hardcoding
+ * a binary toggle, so adding a language is a one-place change. */
+export const SUPPORTED_LANGUAGES = ['en', 'bn'] as const
+export type Language = (typeof SUPPORTED_LANGUAGES)[number]
 
 export interface PreferencesState {
   themeMode: ThemeMode

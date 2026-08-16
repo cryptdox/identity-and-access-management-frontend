@@ -1,0 +1,16 @@
+{
+  "list.title": "Groups",
+  "list.description": "Organize users hierarchically and assign roles at the group level.",
+  "list.empty": "No groups yet",
+  "new": "New group",
+  "create.title": "New group",
+  "create.description": "Create a group, optionally nested under a parent.",
+  "create.name": "Group name",
+  "create.parent": "Parent group",
+  "create.noParent": "None (top-level group)",
+  "tabs.general": "General",
+  "tabs.roles": "Roles",
+  "tabs.members": "Members",
+  "deleteGroup": "Delete group",
+  "topLevelGroup": "Top-level group"
+}

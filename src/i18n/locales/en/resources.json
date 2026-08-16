@@ -1,0 +1,12 @@
+{
+  "title": "Resources & permissions",
+  "description": "Fine-grained access control for {{clientId}}",
+  "empty": "No resources defined",
+  "emptyHint": "Add a resource to start defining fine-grained permissions.",
+  "addResource": "Add resource",
+  "resourceName": "Resource name",
+  "resourceType": "Resource type",
+  "initialActions": "Initial actions",
+  "createResource": "Create resource",
+  "deleteResource": "Delete resource"
+}

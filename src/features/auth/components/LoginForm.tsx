@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import { useFormik } from 'formik'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff } from 'lucide-react'
 import { loginSchema, type LoginFormValues } from '@/features/auth/schemas/login.schema'
 import { useLogin } from '@/features/auth/hooks/useLogin'
 import { Input } from '@/common/components/ui/Input'
 import { Button } from '@/common/components/ui/Button'
 import { useToast } from '@/common/hooks/useToast'
+import { getApiErrorMessage } from '@/common/utils/apiError'
 
 const DEFAULT_REALM = (import.meta.env.VITE_DEFAULT_REALM_NAME as string | undefined) ?? 'Master'
 
 export function LoginForm() {
+  const { t } = useTranslation('auth')
   const { login, isLoading } = useLogin()
   const toast = useToast()
   const navigate = useNavigate()
@@ -27,8 +30,7 @@ export function LoginForm() {
         await login(values)
         navigate(from, { replace: true })
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Invalid credentials'
-        toast.error(message)
+        toast.error(getApiErrorMessage(err, t('invalidCredentials')))
       } finally {
         setSubmitting(false)
       }
@@ -38,7 +40,7 @@ export function LoginForm() {
   return (
     <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
       <Input
-        label="Realm"
+        label={t('realm')}
         name="realmName"
         value={formik.values.realmName}
         onChange={formik.handleChange}
@@ -46,7 +48,7 @@ export function LoginForm() {
         error={formik.touched.realmName ? formik.errors.realmName : undefined}
       />
       <Input
-        label="Email"
+        label={t('email')}
         name="email"
         type="email"
         autoComplete="username"
@@ -57,7 +59,7 @@ export function LoginForm() {
       />
       <div className="relative">
         <Input
-          label="Password"
+          label={t('password')}
           name="password"
           type={showPassword ? 'text' : 'password'}
           autoComplete="current-password"
@@ -84,11 +86,11 @@ export function LoginForm() {
           onChange={formik.handleChange}
           className="size-4 rounded border-border text-primary focus:ring-primary/30"
         />
-        Remember this device
+        {t('rememberDevice')}
       </label>
 
       <Button type="submit" loading={isLoading || formik.isSubmitting} className="mt-2">
-        Sign in
+        {t('signIn')}
       </Button>
     </form>
   )

@@ -82,18 +82,17 @@ export default authSlice.reducer
  * user/permissions/roles/groups (always refetched fresh from /auth/me on boot).
  * When rememberDevice is false, nothing is written at all: a reload forces re-login.
  *
- * redux-persist calls the inbound/outbound functions once PER TOP-LEVEL KEY of the
- * slice's state (not once with the whole state object) — `key` is that field's name
- * and the 3rd argument is the whole slice state, which is what we actually need here
- * to decide, key by key, whether to keep or blank a field.
+ * Which KEYS are even eligible is declared via `whitelist: ['refreshToken',
+ * 'rememberDevice']` on the persistConfig in app/rootReducer.ts — redux-persist only
+ * invokes this transform for those two keys to begin with. This transform only adds
+ * the one thing whitelist can't express: the conditional (only persist when
+ * rememberDevice && refreshToken are both truthy), using the 3rd argument
+ * (the whole slice state) redux-persist passes alongside each key's own value.
  */
-const PERSISTED_KEYS = new Set(['refreshToken', 'rememberDevice'])
-
 export const authPersistTransform = createTransform<unknown, unknown, AuthState>(
-  (subState, key, state) => {
+  (subState, _key, state) => {
     const shouldPersist = Boolean(state.rememberDevice && state.refreshToken)
-    if (!shouldPersist || !PERSISTED_KEYS.has(key as string)) return undefined
-    return subState
+    return shouldPersist ? subState : undefined
   },
   (subState) => subState,
 )

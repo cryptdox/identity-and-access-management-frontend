@@ -1,0 +1,22 @@
+{
+  "list.title": "ক্লায়েন্ট",
+  "list.description": "এই রিয়েলমে নিবন্ধিত OAuth ক্লায়েন্ট অ্যাপ্লিকেশন।",
+  "list.searchPlaceholder": "ক্লায়েন্ট খুঁজুন…",
+  "list.empty": "এখনও কোনো ক্লায়েন্ট নেই।",
+  "new": "নতুন ক্লায়েন্ট",
+  "create.title": "নতুন ক্লায়েন্ট",
+  "create.description": "একটি OAuth ক্লায়েন্ট অ্যাপ্লিকেশন নিবন্ধন করুন।",
+  "create.clientId": "ক্লায়েন্ট আইডি",
+  "create.displayName": "প্রদর্শনী নাম (ঐচ্ছিক)",
+  "create.type": "ক্লায়েন্টের ধরন",
+  "type.public": "পাবলিক (SPA, মোবাইল — সিক্রেট নেই)",
+  "type.confidential": "কনফিডেনশিয়াল (সার্ভার-সাইড — সিক্রেট আছে)",
+  "tabs.general": "সাধারণ",
+  "tabs.secret": "সিক্রেট",
+  "tabs.roles": "ক্লায়েন্ট রোল",
+  "resourcesAndPermissions": "রিসোর্স ও অনুমতি",
+  "deleteClient": "ক্লায়েন্ট মুছুন",
+  "rotateSecret": "সিক্রেট পরিবর্তন করুন",
+  "noSecret": "এই ক্লায়েন্টের কোনো সিক্রেট নেই",
+  "noSecretHint": "পাবলিক ক্লায়েন্ট সিক্রেট ছাড়াই প্রমাণীকরণ করে।"
+}

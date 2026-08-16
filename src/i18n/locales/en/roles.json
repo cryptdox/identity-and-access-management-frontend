@@ -1,0 +1,18 @@
+{
+  "list.title": "Roles",
+  "list.description": "Reusable permission sets that can be assigned to users and groups.",
+  "list.searchPlaceholder": "Search roles…",
+  "list.empty": "No roles yet.",
+  "new": "New role",
+  "create.title": "New role",
+  "create.description": "Create a role to grant a set of permissions.",
+  "create.name": "Role name",
+  "create.description.field": "Description (optional)",
+  "tabs.general": "General",
+  "tabs.composite": "Composite roles",
+  "tabs.permissions": "Permissions",
+  "deleteRole": "Delete role",
+  "compositeHint": "A composite role automatically includes another role's permissions.",
+  "notComposite": "Not a composite role",
+  "notCompositeHint": "This role doesn't include any other roles."
+}

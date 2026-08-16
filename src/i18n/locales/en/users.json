@@ -1,0 +1,20 @@
+{
+  "list.title": "Users",
+  "list.description": "Manage the users of this realm.",
+  "list.searchPlaceholder": "Search by username or email…",
+  "list.empty": "No users yet.",
+  "new": "New user",
+  "create.title": "New user",
+  "create.description": "Add a user to this realm.",
+  "tabs.profile": "Profile",
+  "tabs.attributes": "Attributes",
+  "tabs.credentials": "Credentials",
+  "tabs.sessions": "Sessions",
+  "enableUser": "Enable user",
+  "disableUser": "Disable user",
+  "deleteUser": "Delete user",
+  "status.enabled": "Enabled",
+  "status.disabled": "Disabled",
+  "status.verified": "Verified",
+  "status.unverified": "Unverified"
+}

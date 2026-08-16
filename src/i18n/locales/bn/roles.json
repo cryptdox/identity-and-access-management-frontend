@@ -1,0 +1,18 @@
+{
+  "list.title": "রোল",
+  "list.description": "ব্যবহারকারী ও গ্রুপে নির্ধারণযোগ্য পুনর্ব্যবহারযোগ্য অনুমতি সেট।",
+  "list.searchPlaceholder": "রোল খুঁজুন…",
+  "list.empty": "এখনও কোনো রোল নেই।",
+  "new": "নতুন রোল",
+  "create.title": "নতুন রোল",
+  "create.description": "একটি অনুমতি সেট দিতে একটি রোল তৈরি করুন।",
+  "create.name": "রোলের নাম",
+  "create.description.field": "বিবরণ (ঐচ্ছিক)",
+  "tabs.general": "সাধারণ",
+  "tabs.composite": "কম্পোজিট রোল",
+  "tabs.permissions": "অনুমতি",
+  "deleteRole": "রোল মুছুন",
+  "compositeHint": "একটি কম্পোজিট রোল স্বয়ংক্রিয়ভাবে অন্য রোলের অনুমতি অন্তর্ভুক্ত করে।",
+  "notComposite": "কম্পোজিট রোল নয়",
+  "notCompositeHint": "এই রোলে অন্য কোনো রোল অন্তর্ভুক্ত নেই।"
+}

@@ -1,0 +1,16 @@
+{
+  "list.title": "গ্রুপ",
+  "list.description": "ব্যবহারকারীদের স্তরবিন্যাসে সাজান এবং গ্রুপ পর্যায়ে রোল নির্ধারণ করুন।",
+  "list.empty": "এখনও কোনো গ্রুপ নেই",
+  "new": "নতুন গ্রুপ",
+  "create.title": "নতুন গ্রুপ",
+  "create.description": "একটি গ্রুপ তৈরি করুন, চাইলে অন্য গ্রুপের অধীনে।",
+  "create.name": "গ্রুপের নাম",
+  "create.parent": "প্যারেন্ট গ্রুপ",
+  "create.noParent": "কোনোটি নয় (টপ-লেভেল গ্রুপ)",
+  "tabs.general": "সাধারণ",
+  "tabs.roles": "রোল",
+  "tabs.members": "সদস্য",
+  "deleteGroup": "গ্রুপ মুছুন",
+  "topLevelGroup": "টপ-লেভেল গ্রুপ"
+}

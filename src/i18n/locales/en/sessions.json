@@ -1,0 +1,12 @@
+{
+  "title": "Sessions",
+  "description": "Active and revoked sessions across this realm.",
+  "empty": "No sessions found.",
+  "filter.all": "All sessions",
+  "filter.active": "Active only",
+  "filter.revoked": "Revoked only",
+  "revoke": "Revoke",
+  "revokeConfirm": "Revoke this session? The user is signed out on that device.",
+  "status.active": "Active",
+  "status.revoked": "Revoked"
+}

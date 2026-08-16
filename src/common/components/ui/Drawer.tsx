@@ -1,7 +1,9 @@
-import type { ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
+import { useEscapeKey } from '@/common/hooks/useEscapeKey'
+import { useFocusTrap } from '@/common/hooks/useFocusTrap'
 
 export interface DrawerProps {
   open: boolean
@@ -11,6 +13,10 @@ export interface DrawerProps {
 }
 
 export function Drawer({ open, onClose, title, children }: DrawerProps) {
+  useEscapeKey(open, onClose)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(dialogRef, open)
+
   return createPortal(
     <AnimatePresence>
       {open && (
@@ -23,6 +29,7 @@ export function Drawer({ open, onClose, title, children }: DrawerProps) {
             onClick={onClose}
           />
           <motion.div
+            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-label={title}

@@ -1,0 +1,22 @@
+{
+  "list.title": "Clients",
+  "list.description": "OAuth client applications registered in this realm.",
+  "list.searchPlaceholder": "Search clients…",
+  "list.empty": "No clients yet.",
+  "new": "New client",
+  "create.title": "New client",
+  "create.description": "Register an OAuth client application.",
+  "create.clientId": "Client ID",
+  "create.displayName": "Display name (optional)",
+  "create.type": "Client type",
+  "type.public": "Public (SPA, mobile — no secret)",
+  "type.confidential": "Confidential (server-side — has a secret)",
+  "tabs.general": "General",
+  "tabs.secret": "Secret",
+  "tabs.roles": "Client roles",
+  "resourcesAndPermissions": "Resources & permissions",
+  "deleteClient": "Delete client",
+  "rotateSecret": "Rotate secret",
+  "noSecret": "No secret for this client",
+  "noSecretHint": "Public clients authenticate without a secret."
+}

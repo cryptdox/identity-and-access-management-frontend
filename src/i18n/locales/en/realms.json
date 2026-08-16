@@ -1,0 +1,18 @@
+{
+  "list.title": "Realms",
+  "list.description": "Tenants in this IAM instance — pick one to manage its users, roles, and clients.",
+  "list.searchPlaceholder": "Search realms…",
+  "list.empty": "No realms yet.",
+  "new": "New realm",
+  "create.title": "New realm",
+  "create.description": "Create a new tenant with its own super admin.",
+  "create.name": "Realm name",
+  "create.superAdmin": "Realm super admin",
+  "create.submit": "Create realm",
+  "settings.title": "Realm settings",
+  "settings.description": "Manage this realm's identity and configuration.",
+  "settings.general": "General",
+  "settings.advanced": "Advanced settings",
+  "dangerZone": "Danger zone",
+  "deleteRealm": "Delete realm"
+}

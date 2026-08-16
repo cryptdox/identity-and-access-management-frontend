@@ -1,8 +1,10 @@
-import { type ReactNode, useEffect } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { cn } from '@/common/utils/cn'
+import { useEscapeKey } from '@/common/hooks/useEscapeKey'
+import { useFocusTrap } from '@/common/hooks/useFocusTrap'
 
 export interface ModalProps {
   open: boolean
@@ -19,14 +21,9 @@ const sizeClasses = {
 }
 
 export function Modal({ open, onClose, title, children, size = 'md' }: ModalProps) {
-  useEffect(() => {
-    if (!open) return
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [open, onClose])
+  useEscapeKey(open, onClose)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(dialogRef, open)
 
   return createPortal(
     <AnimatePresence>
@@ -40,6 +37,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
             onClick={onClose}
           />
           <motion.div
+            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-label={title}

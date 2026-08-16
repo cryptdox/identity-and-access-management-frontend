@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { ShieldCheck } from 'lucide-react'
 import { LoginForm } from '@/features/auth/components/LoginForm'
 
 export default function LoginPage() {
+  const { t } = useTranslation('auth')
   return (
     <div className="flex min-h-screen bg-bg">
       <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-primary to-secondary p-10 text-white lg:flex">
@@ -21,14 +23,8 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <h1 className="text-3xl font-semibold leading-tight">
-            Multi-realm identity
-            <br /> &amp; access management.
-          </h1>
-          <p className="mt-3 max-w-md text-white/75">
-            Manage realms, users, groups, roles, clients, and fine-grained permissions
-            from one console.
-          </p>
+          <h1 className="text-3xl font-semibold leading-tight">{t('heroTitle')}</h1>
+          <p className="mt-3 max-w-md text-white/75">{t('heroSubtitle')}</p>
         </motion.div>
 
         <div />
@@ -47,8 +43,8 @@ export default function LoginPage() {
               <span className="font-semibold">IAM Console</span>
             </div>
           </div>
-          <h2 className="text-xl font-semibold text-text">Sign in</h2>
-          <p className="mt-1 text-sm text-text-secondary">Enter your credentials to continue.</p>
+          <h2 className="text-xl font-semibold text-text">{t('signIn')}</h2>
+          <p className="mt-1 text-sm text-text-secondary">{t('signInSubtitle')}</p>
           <div className="mt-6">
             <LoginForm />
           </div>

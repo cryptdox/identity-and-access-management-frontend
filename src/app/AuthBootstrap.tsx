@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { useRefreshMutation, useLazyGetMeQuery } from '@/api/endpoints/auth.api'
 import { authActions } from '@/features/auth/authSlice'
@@ -19,9 +19,19 @@ export function AuthBootstrap({ children }: { children: ReactNode }) {
   const [refresh] = useRefreshMutation()
   const [fetchMe] = useLazyGetMeQuery()
   const [booting, setBooting] = useState(() => Boolean(refreshToken))
+  const hasStarted = useRef(false)
 
   useEffect(() => {
-    let cancelled = false
+    // Guards against React StrictMode's dev-only double-invoke of this effect: the
+    // refresh token is single-use/rotate-on-use, so a second concurrent /auth/refresh
+    // call with the same token would race the first and fail. Setting this
+    // synchronously (not inside the async function) means the second invocation
+    // bails before starting any work, while the first's in-flight request is left
+    // to complete and apply its result normally — deliberately not tied to effect
+    // cleanup/cancellation, which would otherwise discard that first invocation's
+    // result out from under it.
+    if (hasStarted.current) return
+    hasStarted.current = true
 
     async function bootstrap() {
       if (!refreshToken) {
@@ -31,27 +41,22 @@ export function AuthBootstrap({ children }: { children: ReactNode }) {
       try {
         const result = await refresh({ refreshToken }).unwrap()
         if (!result.data) throw new Error('Refresh response missing data')
-        if (cancelled) return
 
         tokenManager.set(result.data.accessToken)
         dispatch(authActions.tokensRotated({ refreshToken: result.data.refreshToken }))
 
         const me = await fetchMe().unwrap()
-        if (cancelled) return
-        if (me.data) {
-          dispatch(authActions.profileLoaded(toProfilePayload(me.data)))
-        }
+        if (!me.data) throw new Error('Profile response missing data')
+        dispatch(authActions.profileLoaded(toProfilePayload(me.data)))
       } catch {
+        tokenManager.clear()
         dispatch(authActions.sessionExpired())
       } finally {
-        if (!cancelled) setBooting(false)
+        setBooting(false)
       }
     }
 
     void bootstrap()
-    return () => {
-      cancelled = true
-    }
     // Deliberately runs once on mount only, against whatever refreshToken redux-persist
     // rehydrated — not re-run on every later rotation.
     // eslint-disable-next-line react-hooks/exhaustive-deps

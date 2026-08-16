@@ -10,6 +10,9 @@ import { baseApi } from '@/api/baseApi'
  * export resolves to `{ default: <realStorageEngine> }`, sometimes nested twice,
  * instead of the engine itself), so a plain `import storage from
  * 'redux-persist/lib/storage'` silently yields an object with no getItem/setItem.
+ * This was confirmed empirically in this project (Vite 8.2.1) — the plain default
+ * import throws `storage.getItem is not a function` at runtime; don't "simplify" this
+ * back to a bare default import without re-testing against a live browser session.
  * Unwrap `.default` until we reach the actual storage engine rather than trusting
  * the bundler's interop shape.
  */
@@ -26,6 +29,9 @@ const storage = unwrapDefault<typeof webStorage.default>(webStorage)
 const authPersistConfig = {
   key: 'auth',
   storage,
+  // Declares WHICH keys are even eligible for persistence; authPersistTransform adds
+  // the one thing whitelist can't express — the rememberDevice/refreshToken condition.
+  whitelist: ['refreshToken', 'rememberDevice'],
   transforms: [authPersistTransform],
 }
 

@@ -1,0 +1,18 @@
+{
+  "list.title": "রিয়েলম",
+  "list.description": "এই আইএএম ইনস্ট্যান্সের টেন্যান্ট — একটি বেছে নিয়ে এর ব্যবহারকারী, রোল ও ক্লায়েন্ট পরিচালনা করুন।",
+  "list.searchPlaceholder": "রিয়েলম খুঁজুন…",
+  "list.empty": "এখনও কোনো রিয়েলম নেই।",
+  "new": "নতুন রিয়েলম",
+  "create.title": "নতুন রিয়েলম",
+  "create.description": "নিজস্ব সুপার অ্যাডমিনসহ একটি নতুন টেন্যান্ট তৈরি করুন।",
+  "create.name": "রিয়েলমের নাম",
+  "create.superAdmin": "রিয়েলম সুপার অ্যাডমিন",
+  "create.submit": "রিয়েলম তৈরি করুন",
+  "settings.title": "রিয়েলম সেটিংস",
+  "settings.description": "এই রিয়েলমের পরিচয় ও কনফিগারেশন পরিচালনা করুন।",
+  "settings.general": "সাধারণ",
+  "settings.advanced": "উন্নত সেটিংস",
+  "dangerZone": "বিপজ্জনক অঞ্চল",
+  "deleteRealm": "রিয়েলম মুছুন"
+}

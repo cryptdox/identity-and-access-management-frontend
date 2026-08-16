@@ -31,9 +31,17 @@ export function useLogin() {
       }),
     )
 
-    const me = await fetchMe().unwrap()
-    if (me.data) {
+    try {
+      const me = await fetchMe().unwrap()
+      if (!me.data) throw new Error('Profile response missing data')
       dispatch(authActions.profileLoaded(toProfilePayload(me.data)))
+    } catch (err) {
+      // Login itself succeeded, but we couldn't fetch the profile that flips
+      // auth.status to 'authenticated' — roll back rather than leave the app
+      // holding live tokens with no corresponding authenticated UI state.
+      tokenManager.clear()
+      dispatch(authActions.loggedOut())
+      throw err
     }
   }
 

@@ -14,10 +14,15 @@ export function RealmLayout() {
   const { realmId } = useParams<{ realmId: string }>()
   const dispatch = useAppDispatch()
   const { data, isLoading, isError } = useGetRealmQuery(realmId ?? '', { skip: !realmId })
+  const realm = data?.data
+  const isValid = Boolean(realm?.enabled)
 
   useEffect(() => {
-    if (realmId) dispatch(setLastRealmId(realmId))
-  }, [realmId, dispatch])
+    // Only remember this realm once it's confirmed to exist and be enabled — persisting
+    // it eagerly (before validation) would make "/" redirect back into the same broken
+    // realm on a stale/bookmarked/deleted realm id, an unrecoverable loop.
+    if (realmId && isValid) dispatch(setLastRealmId(realmId))
+  }, [realmId, isValid, dispatch])
 
   if (!realmId) return <Navigate to="/realms" replace />
 
@@ -30,7 +35,6 @@ export function RealmLayout() {
     )
   }
 
-  const realm = data?.data
   if (isError || !realm) {
     return (
       <div className="p-6">
