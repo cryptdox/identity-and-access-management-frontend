@@ -6,14 +6,19 @@ import { Input } from '@/common/components/ui/Input'
 import { Button } from '@/common/components/ui/Button'
 import { confirm } from '@/common/utils/confirm'
 import { useCan } from '@/common/hooks/usePermission'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import type { Realm } from '@/features/realms/realm.types'
 
 export function RealmGeneralForm({ realm }: { realm: Realm }) {
   const { updateRealm, deleteRealm, isUpdating, isDeleting } = useRealmMutations()
   const navigate = useNavigate()
+  const { isMasterRealmUser } = useCurrentUser()
   const canUpdate = useCan(ResourceName.REALM, TypeAction.UPDATE)
-  const canDelete = useCan(ResourceName.REALM, TypeAction.DELETE)
+  // Realm deletion is Master-only on the backend regardless of the REALM:DELETE
+  // permission grant (which every tenant admin also has, since permissions here are
+  // global, not realm-scoped) — see realm.middlewares.ts.
+  const canDelete = useCan(ResourceName.REALM, TypeAction.DELETE) && isMasterRealmUser
 
   const formik = useFormik<UpdateRealmFormValues>({
     initialValues: { name: realm.name, enabled: realm.enabled },

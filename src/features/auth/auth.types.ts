@@ -27,6 +27,11 @@ export interface UserProfileDto {
   name?: string
   isEmailVerified: boolean
   isMasterRealmUser?: boolean
+  /** The realm this user's own account belongs to (not necessarily the realm
+   * currently being viewed/managed) — needed so non-master users can be routed
+   * straight to their own realm, since they can't list/browse other realms. */
+  realmId?: string
+  realmName?: string
 }
 
 /** Nested under roles[].permissions[] in the real GET /auth/me response — there is

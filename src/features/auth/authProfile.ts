@@ -15,6 +15,8 @@ export function toProfilePayload(details: UserProfileDetailsDto): ProfileLoadedP
       name: details.name,
       isEmailVerified: details.isEmailVerified,
       isMasterRealmUser: details.isMasterRealmUser,
+      realmId: details.realm?.realmId,
+      realmName: details.realm?.name,
     },
     permissions: derivePermissionStrings(details.roles),
     roles: details.roles,

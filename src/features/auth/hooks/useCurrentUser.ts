@@ -7,5 +7,12 @@ export function useCurrentUser() {
   const permissions = useAppSelector((state) => state.auth.permissions)
   const status = useAppSelector((state) => state.auth.status)
 
-  return { user, roles, groups, permissions, isAuthenticated: status === 'authenticated' }
+  return {
+    user,
+    roles,
+    groups,
+    permissions,
+    isAuthenticated: status === 'authenticated',
+    isMasterRealmUser: Boolean(user?.isMasterRealmUser),
+  }
 }

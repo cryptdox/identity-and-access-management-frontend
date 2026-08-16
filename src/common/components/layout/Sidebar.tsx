@@ -11,10 +11,12 @@ import {
   Settings,
   ChevronsLeft,
   ChevronsRight,
+  Building2,
 } from 'lucide-react'
 import { cn } from '@/common/utils/cn'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { setSidebarCollapsed } from '@/app/preferencesSlice'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useTranslation } from 'react-i18next'
 
 export function Sidebar() {
@@ -22,6 +24,7 @@ export function Sidebar() {
   const collapsed = useAppSelector((state) => state.preferences.sidebarCollapsed)
   const dispatch = useAppDispatch()
   const { t } = useTranslation('common')
+  const { isMasterRealmUser } = useCurrentUser()
 
   const nav = realmId
     ? [
@@ -52,6 +55,23 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
+        {/* Only Master-realm users can browse/manage the realm list itself (backend
+            restricts realm create/list-all/delete to isMasterRealmUser) — a tenant
+            admin only ever has their own realm, reachable via HomeRedirect already. */}
+        {isMasterRealmUser && (
+          <NavLink
+            to="/realms"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                isActive ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white',
+              )
+            }
+          >
+            <Building2 className="size-4.5 shrink-0" />
+            {!collapsed && <span className="truncate">All realms</span>}
+          </NavLink>
+        )}
         {nav.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}

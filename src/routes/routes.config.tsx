@@ -3,6 +3,7 @@ import { ProtectedRoute } from './ProtectedRoute'
 import { AppShell } from '@/common/components/layout/AppShell'
 import { RealmLayout } from '@/common/components/layout/RealmLayout'
 import { withPermission } from '@/common/hocs/withPermission'
+import { withMasterRealmUser } from '@/common/hocs/withMasterRealmUser'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import LoginPage from '@/features/auth/pages/LoginPage'
 import HomeRedirect from '@/common/pages/HomeRedirect'
@@ -29,8 +30,12 @@ import SessionsPage from '@/features/sessions/pages/SessionsPage'
 import RefreshTokensPage from '@/features/tokens/pages/RefreshTokensPage'
 import EventsPage from '@/features/events/pages/EventsPage'
 
-const GuardedRealmList = withPermission(RealmListPage, ResourceName.REALM, TypeAction.READ_ALL)
-const GuardedRealmCreate = withPermission(RealmCreatePage, ResourceName.REALM, TypeAction.CREATE)
+// Realm list/create are Master-only on the backend now (realmMiddleware requires
+// isMasterRealmUser) — withPermission alone isn't enough since REALM:CREATE/READ_ALL
+// is a global grant every tenant admin also has; withMasterRealmUser adds the
+// backend's actual restriction so the UI doesn't offer actions that only fail on click.
+const GuardedRealmList = withMasterRealmUser(withPermission(RealmListPage, ResourceName.REALM, TypeAction.READ_ALL))
+const GuardedRealmCreate = withMasterRealmUser(withPermission(RealmCreatePage, ResourceName.REALM, TypeAction.CREATE))
 const GuardedRealmSettings = withPermission(RealmSettingsPage, ResourceName.REALM, TypeAction.UPDATE)
 const GuardedUserList = withPermission(UserListPage, ResourceName.USER, TypeAction.READ_ALL)
 const GuardedUserCreate = withPermission(UserCreatePage, ResourceName.USER, TypeAction.CREATE)
