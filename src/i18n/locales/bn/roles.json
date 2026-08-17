@@ -11,6 +11,7 @@
   "tabs.general": "সাধারণ",
   "tabs.composite": "কম্পোজিট রোল",
   "tabs.permissions": "অনুমতি",
+  "tabs.users": "ব্যবহারকারী",
   "deleteRole": "রোল মুছুন",
   "compositeHint": "একটি কম্পোজিট রোল স্বয়ংক্রিয়ভাবে অন্য রোলের অনুমতি অন্তর্ভুক্ত করে।",
   "notComposite": "কম্পোজিট রোল নয়",

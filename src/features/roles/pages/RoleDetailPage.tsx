@@ -9,6 +9,7 @@ import { Tabs } from '@/common/components/ui/Tabs'
 import { RoleGeneralTab } from '@/features/roles/components/RoleGeneralTab'
 import { CompositeRoleEditor } from '@/features/roles/components/CompositeRoleEditor'
 import { RolePermissionPanel } from '@/features/roles/components/RolePermissionPanel'
+import { RoleUsersTab } from '@/features/roles/components/RoleUsersTab'
 
 export default function RoleDetailPage() {
   const { t } = useTranslation('roles')
@@ -40,9 +41,17 @@ export default function RoleDetailPage() {
           {
             key: 'composite',
             label: t('tabs.composite'),
-            content: <CompositeRoleEditor roleId={role.roleId} clientIdInternal={role.clientIdInternal} />,
+            content: (
+              <CompositeRoleEditor
+                roleId={role.roleId}
+                clientIdInternal={role.clientIdInternal}
+                isOwner={Boolean(role.client?.isOwner)}
+                clientName={role.client?.clientId}
+              />
+            ),
           },
           { key: 'permissions', label: t('tabs.permissions'), content: <RolePermissionPanel role={role} /> },
+          { key: 'users', label: t('tabs.users'), content: <RoleUsersTab roleId={role.roleId} /> },
         ]}
       />
     </div>

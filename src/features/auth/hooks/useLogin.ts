@@ -3,6 +3,7 @@ import { useAppDispatch } from '@/app/hooks'
 import { authActions } from '@/features/auth/authSlice'
 import { toProfilePayload } from '@/features/auth/authProfile'
 import { tokenManager } from '@/api/tokenManager'
+import { setRememberDevice } from '@/features/auth/rememberDeviceFlag'
 import type { LoginFormValues } from '@/features/auth/schemas/login.schema'
 
 const IAM_CLIENT_ID = (import.meta.env.VITE_IAM_CLIENT_ID as string | undefined) ?? ''
@@ -23,23 +24,27 @@ export function useLogin() {
     if (!result.data) throw new Error('Login response missing data')
     const { accessToken, refreshToken } = result.data
 
+    const rememberDevice = values.rememberDevice ?? false
     tokenManager.set(accessToken)
-    dispatch(
-      authActions.credentialsReceived({
-        refreshToken,
-        rememberDevice: values.rememberDevice ?? false,
-      }),
-    )
+    // Decides which storage tier app/rootReducer.ts's custom auth storage engine
+    // writes to (localStorage vs sessionStorage) — must be set before the persist
+    // machinery's next debounced write, so it happens synchronously alongside the
+    // dispatch rather than as a side effect of a reducer.
+    setRememberDevice(rememberDevice)
+    dispatch(authActions.credentialsReceived({ refreshToken, rememberDevice }))
 
     try {
       const me = await fetchMe().unwrap()
       if (!me.data) throw new Error('Profile response missing data')
-      dispatch(authActions.profileLoaded(toProfilePayload(me.data)))
+      const payload = toProfilePayload(me.data)
+      dispatch(authActions.profileLoaded(payload))
+      return payload.user
     } catch (err) {
       // Login itself succeeded, but we couldn't fetch the profile that flips
       // auth.status to 'authenticated' — roll back rather than leave the app
       // holding live tokens with no corresponding authenticated UI state.
       tokenManager.clear()
+      setRememberDevice(false)
       dispatch(authActions.loggedOut())
       throw err
     }

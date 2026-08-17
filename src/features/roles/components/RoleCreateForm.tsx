@@ -18,7 +18,9 @@ export function RoleCreateForm() {
   const navigate = useNavigate()
   const toast = useToast()
   const { data: clientsData, isLoading: isClientsLoading } = useListClientsQuery({ realmId, limit: 200 })
-  const clients = clientsData?.data?.items ?? []
+  // Creating a role for a client your realm doesn't own is rejected server-side —
+  // only offer the ones this realm actually owns.
+  const clients = (clientsData?.data?.items ?? []).filter((c) => c.isOwner)
 
   const formik = useFormik<RoleFormValues>({
     initialValues: { clientIdInternal: presetClientIdInternal, name: '', description: '' },

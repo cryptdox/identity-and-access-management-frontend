@@ -13,6 +13,9 @@ export interface Client {
   refreshTokenTTL?: number
   createdAt?: string
   updatedAt: string
+  // Effective "can the caller manage this client" (already true for Master) —
+  // computed server-side from ClientRealm.isOwner relative to the caller's own realm.
+  isOwner?: boolean
 }
 
 export interface CreateClientDto {

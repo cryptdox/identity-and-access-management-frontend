@@ -2,6 +2,7 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { tokenManager } from './tokenManager'
 import { getStoreRef } from './storeAccessor'
 import { authActions } from '@/features/auth/authSlice'
+import { setRememberDevice } from '@/features/auth/rememberDeviceFlag'
 import type { ApiResponse } from './types/common.types'
 import type { RefreshTokenResponseDto } from '@/features/auth/auth.types'
 
@@ -49,6 +50,7 @@ function isAuthExpiredError(error: AxiosError<{ message?: string }>): boolean {
 function forceSessionExpired() {
   const store = getStoreRef()
   tokenManager.clear()
+  setRememberDevice(false)
   store.dispatch(authActions.sessionExpired())
   if (!window.location.pathname.startsWith('/login')) {
     window.location.href = '/login?sessionExpired=1'

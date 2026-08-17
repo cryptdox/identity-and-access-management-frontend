@@ -7,6 +7,8 @@
   "create.title": "নতুন ব্যবহারকারী",
   "create.description": "এই রিয়েলমে একজন ব্যবহারকারী যোগ করুন।",
   "tabs.profile": "প্রোফাইল",
+  "tabs.roles": "রোল",
+  "tabs.groups": "গ্রুপ",
   "tabs.attributes": "অ্যাট্রিবিউট",
   "tabs.credentials": "ক্রেডেনশিয়াল",
   "tabs.sessions": "সেশন",

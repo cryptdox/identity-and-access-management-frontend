@@ -12,17 +12,21 @@ import { EmptyState } from '@/common/components/ui/EmptyState'
 import { ResourceMatrixTable } from '@/features/resources/components/ResourceMatrixTable'
 import { AddResourceModal } from '@/features/resources/components/AddResourceModal'
 import { useCan } from '@/common/hooks/usePermission'
+import { ClientOwnerOnlyNotice } from '@/common/components/ui/ClientOwnerOnlyNotice'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 
 export default function ResourcePermissionMatrixPage() {
   const { t } = useTranslation('resources')
   const { clientIdInternal } = useParams<{ clientIdInternal: string }>()
-  const canCreate = useCan(ResourceName.RESOURCE, TypeAction.CREATE)
   const [modalOpen, setModalOpen] = useState(false)
 
   const { data: clientData, isLoading: isClientLoading } = useGetClientQuery(clientIdInternal ?? '', {
     skip: !clientIdInternal,
   })
+  const client = clientData?.data
+  // Creating resources for a client is restricted server-side to its owning realm
+  // (client.isOwner already folds in the Master bypass).
+  const canCreate = useCan(ResourceName.RESOURCE, TypeAction.CREATE) && Boolean(client?.isOwner)
   const { data: resourcesData, isLoading: isResourcesLoading } = useListResourcesQuery(
     { clientIdInternal: clientIdInternal ?? '', limit: 200 },
     { skip: !clientIdInternal },
@@ -41,7 +45,6 @@ export default function ResourcePermissionMatrixPage() {
   }, [resourcesData, permissionsData])
 
   const isLoading = isClientLoading || isResourcesLoading || isPermissionsLoading
-  const client = clientData?.data
 
   if (!clientIdInternal) return null
 
@@ -60,12 +63,16 @@ export default function ResourcePermissionMatrixPage() {
         }
       />
 
+      {client && !client.isOwner && (
+        <ClientOwnerOnlyNotice feature="create, update, or delete resources and permissions" clientName={client.clientId} />
+      )}
+
       {isLoading ? (
         <Skeleton className="h-64 w-full max-w-3xl" />
       ) : rows.length === 0 ? (
         <EmptyState title={t('empty')} description={t('emptyHint')} />
       ) : (
-        <ResourceMatrixTable rows={rows} clientIdInternal={clientIdInternal} />
+        <ResourceMatrixTable rows={rows} clientIdInternal={clientIdInternal} isOwner={Boolean(client?.isOwner)} />
       )}
 
       {client?.clientId && (

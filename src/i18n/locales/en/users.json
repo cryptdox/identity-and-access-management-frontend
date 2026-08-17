@@ -7,6 +7,8 @@
   "create.title": "New user",
   "create.description": "Add a user to this realm.",
   "tabs.profile": "Profile",
+  "tabs.roles": "Roles",
+  "tabs.groups": "Groups",
   "tabs.attributes": "Attributes",
   "tabs.credentials": "Credentials",
   "tabs.sessions": "Sessions",

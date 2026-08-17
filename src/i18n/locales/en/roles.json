@@ -11,6 +11,7 @@
   "tabs.general": "General",
   "tabs.composite": "Composite roles",
   "tabs.permissions": "Permissions",
+  "tabs.users": "Users",
   "deleteRole": "Delete role",
   "compositeHint": "A composite role automatically includes another role's permissions.",
   "notComposite": "Not a composite role",

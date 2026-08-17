@@ -14,18 +14,27 @@ import { confirm } from '@/common/utils/confirm'
 import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
 import { useCan } from '@/common/hooks/usePermission'
-import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { ClientOwnerOnlyNotice } from '@/common/components/ui/ClientOwnerOnlyNotice'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 
 /** Composite roles let this role "include" another role's permissions. Cycle
  * prevention (e.g. A includes B includes A) is enforced server-side — we just
  * surface a rejection via toast rather than re-implementing cycle detection here. */
-export function CompositeRoleEditor({ roleId, clientIdInternal }: { roleId: string; clientIdInternal: string }) {
-  const { isMasterRealmUser } = useCurrentUser()
-  // Roles are global/shared across tenants, so adding/removing a composite link is
-  // restricted server-side to Master-realm admins — mirrored here so the UI doesn't
-  // offer an action every tenant admin would just get a 403 back for.
-  const canManage = useCan(ResourceName.ROLE_COMPOSITE, TypeAction.CREATE) && isMasterRealmUser
+export function CompositeRoleEditor({
+  roleId,
+  clientIdInternal,
+  isOwner,
+  clientName,
+}: {
+  roleId: string
+  clientIdInternal: string
+  isOwner: boolean
+  clientName?: string
+}) {
+  // A composite link is only valid between roles of the SAME client, restricted
+  // server-side to that client's owning realm — mirrored here so the UI doesn't
+  // offer an action a non-owning realm would just get a 403 back for.
+  const canManage = useCan(ResourceName.ROLE_COMPOSITE, TypeAction.CREATE) && isOwner
   const { data: compositesData, isLoading } = useListRoleCompositesQuery({ roleId, limit: 200 })
   // A composite link is only valid between roles of the SAME client (enforced
   // server-side), so the picker only ever offers roles this role could actually compose.
@@ -66,6 +75,8 @@ export function CompositeRoleEditor({ roleId, clientIdInternal }: { roleId: stri
       <p className="mb-4 text-sm text-text-secondary">
         A composite role automatically includes another role's permissions.
       </p>
+
+      {!isOwner && <ClientOwnerOnlyNotice feature="add or remove composite role links" clientName={clientName} />}
 
       {canManage && (
         <div className="mb-4 flex items-end gap-2">

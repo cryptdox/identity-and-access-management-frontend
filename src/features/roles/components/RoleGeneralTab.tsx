@@ -7,7 +7,7 @@ import { Input } from '@/common/components/ui/Input'
 import { Button } from '@/common/components/ui/Button'
 import { confirm } from '@/common/utils/confirm'
 import { useCan } from '@/common/hooks/usePermission'
-import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { ClientOwnerOnlyNotice } from '@/common/components/ui/ClientOwnerOnlyNotice'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import type { Role } from '@/features/roles/role.types'
 
@@ -15,11 +15,10 @@ export function RoleGeneralTab({ role }: { role: Role }) {
   const realmId = useRealmId()
   const navigate = useNavigate()
   const { updateRole, deleteRole, isUpdating, isDeleting } = useRoleMutations()
-  const { isMasterRealmUser } = useCurrentUser()
-  // Role has no realm concept — every tenant shares the same global role row, so the
-  // backend restricts updating/deleting an EXISTING role to Master-realm admins only.
-  const canUpdate = useCan(ResourceName.ROLE, TypeAction.UPDATE) && isMasterRealmUser
-  const canDelete = useCan(ResourceName.ROLE, TypeAction.DELETE) && isMasterRealmUser
+  // A role belongs to one client — only that client's owning realm may edit/delete it
+  // (role.client.isOwner already folds in the Master bypass server-side).
+  const canUpdate = useCan(ResourceName.ROLE, TypeAction.UPDATE) && Boolean(role.client?.isOwner)
+  const canDelete = useCan(ResourceName.ROLE, TypeAction.DELETE) && Boolean(role.client?.isOwner)
 
   const formik = useFormik<RoleFormValues>({
     initialValues: { name: role.name, description: role.description ?? '' },
@@ -47,6 +46,7 @@ export function RoleGeneralTab({ role }: { role: Role }) {
 
   return (
     <div className="flex max-w-lg flex-col gap-8">
+      {!role.client?.isOwner && <ClientOwnerOnlyNotice feature="edit or delete an existing role" clientName={role.client?.clientId} />}
       <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
         <Input label="Client" value={role.client?.clientId ?? role.clientIdInternal} disabled readOnly />
         <Input

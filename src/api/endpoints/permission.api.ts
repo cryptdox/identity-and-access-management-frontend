@@ -9,6 +9,12 @@ export const permissionApi = baseApi.injectEndpoints({
       query: (params) => ({ url: '/permission', method: 'GET', params: params ?? undefined }),
       providesTags: [{ type: 'Permission', id: 'LIST' }],
     }),
+    listPermissionsByClient: builder.query<ApiResponse<PaginatedData<Permission>>, { clientIdInternal: string } & ListQueryParams>({
+      // Route param is literally named :clientId, but the backend treats it as the
+      // internal id (permission.service.ts's getByClientId) — not the external clientId string.
+      query: ({ clientIdInternal, ...params }) => ({ url: `/permission/client/${clientIdInternal}`, method: 'GET', params }),
+      providesTags: (_result, _error, { clientIdInternal }) => [{ type: 'Permission', id: clientIdInternal }],
+    }),
     createPermission: builder.mutation<
       ApiResponse<Permission>,
       { action: TypeAction; resourceId: string; clientIdInternal: string }
@@ -29,4 +35,9 @@ export const permissionApi = baseApi.injectEndpoints({
   }),
 })
 
-export const { useListPermissionsQuery, useCreatePermissionMutation, useDeletePermissionMutation } = permissionApi
+export const {
+  useListPermissionsQuery,
+  useListPermissionsByClientQuery,
+  useCreatePermissionMutation,
+  useDeletePermissionMutation,
+} = permissionApi

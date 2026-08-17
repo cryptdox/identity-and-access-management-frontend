@@ -17,6 +17,9 @@ import { cn } from '@/common/utils/cn'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { setSidebarCollapsed } from '@/app/preferencesSlice'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+import { usePermission } from '@/common/hooks/usePermission'
+import { useGetRealmQuery } from '@/api/endpoints/realm.api'
+import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import { useTranslation } from 'react-i18next'
 
 export function Sidebar() {
@@ -25,19 +28,27 @@ export function Sidebar() {
   const dispatch = useAppDispatch()
   const { t } = useTranslation('common')
   const { isMasterRealmUser } = useCurrentUser()
+  const { can } = usePermission()
+  // A master admin can be inside ANY realm's pages, and two realms' ids are
+  // indistinguishable UUIDs — surfacing the name here (not just the breadcrumb) is
+  // what stops "which realm am I even looking at" mistakes while switching around.
+  const { data: realmData } = useGetRealmQuery(realmId ?? '', { skip: !realmId })
 
+  // Each entry mirrors the exact resource+action routes.config.tsx guards that page
+  // with — a link the user can't actually use (and would 403/redirect on click) is
+  // worse than no link at all, so this list must stay in lockstep with that file.
   const nav = realmId
     ? [
-        { to: `/r/${realmId}/dashboard`, label: t('nav.dashboard'), icon: LayoutDashboard },
-        { to: `/r/${realmId}/users`, label: t('nav.users'), icon: Users },
-        { to: `/r/${realmId}/groups`, label: t('nav.groups'), icon: FolderTree },
-        { to: `/r/${realmId}/roles`, label: t('nav.roles'), icon: ShieldCheck },
-        { to: `/r/${realmId}/clients`, label: t('nav.clients'), icon: AppWindow },
-        { to: `/r/${realmId}/sessions`, label: t('nav.sessions'), icon: Activity },
-        { to: `/r/${realmId}/refresh-tokens`, label: t('nav.tokens'), icon: KeyRound },
-        { to: `/r/${realmId}/events`, label: t('nav.events'), icon: ScrollText },
-        { to: `/r/${realmId}/settings`, label: t('nav.settings'), icon: Settings },
-      ]
+        { to: `/r/${realmId}/dashboard`, label: t('nav.dashboard'), icon: LayoutDashboard, show: true },
+        { to: `/r/${realmId}/users`, label: t('nav.users'), icon: Users, show: can(ResourceName.USER, TypeAction.READ_ALL) },
+        { to: `/r/${realmId}/groups`, label: t('nav.groups'), icon: FolderTree, show: can(ResourceName.GROUP, TypeAction.READ_ALL) },
+        { to: `/r/${realmId}/roles`, label: t('nav.roles'), icon: ShieldCheck, show: can(ResourceName.ROLE, TypeAction.READ_ALL) },
+        { to: `/r/${realmId}/clients`, label: t('nav.clients'), icon: AppWindow, show: can(ResourceName.CLIENT, TypeAction.READ_ALL) },
+        { to: `/r/${realmId}/sessions`, label: t('nav.sessions'), icon: Activity, show: can(ResourceName.SESSION, TypeAction.READ_ALL) },
+        { to: `/r/${realmId}/refresh-tokens`, label: t('nav.tokens'), icon: KeyRound, show: can(ResourceName.REFRESH_TOKEN, TypeAction.READ_ALL) },
+        { to: `/r/${realmId}/events`, label: t('nav.events'), icon: ScrollText, show: can(ResourceName.EVENT, TypeAction.READ_ALL) },
+        { to: `/r/${realmId}/settings`, label: t('nav.settings'), icon: Settings, show: can(ResourceName.REALM, TypeAction.UPDATE) },
+      ].filter((item) => item.show)
     : []
 
   return (
@@ -53,6 +64,13 @@ export function Sidebar() {
         </div>
         {!collapsed && <span className="truncate font-semibold">IAM Console</span>}
       </div>
+
+      {!collapsed && realmId && (
+        <div className="mx-3 mb-2 flex items-center gap-1.5 truncate rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80">
+          <Building2 className="size-3.5 shrink-0" />
+          <span className="truncate">{realmData?.data?.name ?? 'Realm'}</span>
+        </div>
+      )}
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
         {/* Only Master-realm users can browse/manage the realm list itself (backend

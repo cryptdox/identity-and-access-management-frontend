@@ -19,11 +19,15 @@ interface ResourceRow {
 export function ResourceMatrixTable({
   rows,
   clientIdInternal,
+  isOwner,
 }: {
   rows: ResourceRow[]
   clientIdInternal: string
+  isOwner: boolean
 }) {
-  const canManage = useCan(ResourceName.RESOURCE, TypeAction.UPDATE)
+  // Creating/removing a resource or its permissions is restricted server-side to the
+  // client's owning realm (isOwner already folds in the Master bypass).
+  const canManage = useCan(ResourceName.RESOURCE, TypeAction.UPDATE) && isOwner
   const [createPermission] = useCreatePermissionMutation()
   const [deletePermission] = useDeletePermissionMutation()
   const [deleteResource] = useDeleteResourceMutation()

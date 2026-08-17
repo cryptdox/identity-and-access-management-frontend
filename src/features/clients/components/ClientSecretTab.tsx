@@ -6,11 +6,12 @@ import { EmptyState } from '@/common/components/ui/EmptyState'
 import { confirm } from '@/common/utils/confirm'
 import { useToast } from '@/common/hooks/useToast'
 import { useCan } from '@/common/hooks/usePermission'
+import { ClientOwnerOnlyNotice } from '@/common/components/ui/ClientOwnerOnlyNotice'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import type { Client } from '@/features/clients/client.types'
 
 export function ClientSecretTab({ client }: { client: Client }) {
-  const canManage = useCan(ResourceName.CLIENT, TypeAction.UPDATE)
+  const canManage = useCan(ResourceName.CLIENT, TypeAction.UPDATE) && Boolean(client.isOwner)
   const { rotateSecret, isUpdating } = useClientMutations()
   const toast = useToast()
   const [revealed, setRevealed] = useState(false)
@@ -42,6 +43,7 @@ export function ClientSecretTab({ client }: { client: Client }) {
 
   return (
     <div className="max-w-lg">
+      {!client.isOwner && <ClientOwnerOnlyNotice feature="rotate this client's secret" clientName={client.clientId} />}
       <div className="flex items-center gap-2">
         <code className="flex-1 truncate rounded-lg border border-border bg-surface-alt/50 px-3 py-2 font-mono text-sm text-text">
           {revealed ? secret : '•'.repeat(32)}

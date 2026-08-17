@@ -6,6 +6,7 @@ import { Input } from '@/common/components/ui/Input'
 import { Button } from '@/common/components/ui/Button'
 import { confirm } from '@/common/utils/confirm'
 import { useCan } from '@/common/hooks/usePermission'
+import { ClientOwnerOnlyNotice } from '@/common/components/ui/ClientOwnerOnlyNotice'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import type { Client } from '@/features/clients/client.types'
 
@@ -13,8 +14,10 @@ export function ClientGeneralTab({ client }: { client: Client }) {
   const realmId = useRealmId()
   const navigate = useNavigate()
   const { updateClient, deleteClient, isUpdating, isDeleting } = useClientMutations()
-  const canUpdate = useCan(ResourceName.CLIENT, TypeAction.UPDATE)
-  const canDelete = useCan(ResourceName.CLIENT, TypeAction.DELETE)
+  // Editing/deleting a client is restricted server-side to its owning realm (client.isOwner
+  // already folds in the Master bypass) — a realm merely using a shared client can't.
+  const canUpdate = useCan(ResourceName.CLIENT, TypeAction.UPDATE) && Boolean(client.isOwner)
+  const canDelete = useCan(ResourceName.CLIENT, TypeAction.DELETE) && Boolean(client.isOwner)
 
   const formik = useFormik({
     initialValues: {
@@ -55,6 +58,7 @@ export function ClientGeneralTab({ client }: { client: Client }) {
 
   return (
     <div className="flex max-w-lg flex-col gap-8">
+      {!client.isOwner && <ClientOwnerOnlyNotice feature="update or delete this client" clientName={client.clientId} />}
       <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-[120px_1fr] gap-y-2 text-sm">
           <span className="text-text-secondary">Client ID</span>

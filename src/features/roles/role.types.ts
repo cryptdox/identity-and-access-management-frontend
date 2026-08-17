@@ -18,6 +18,9 @@ export interface RoleClientSummary {
   clientIdInternal: string
   clientId: string
   name: string | null
+  // Effective "can the caller manage this role's client" — already true for Master,
+  // computed server-side. Use this alone; don't also check isMasterRealmUser.
+  isOwner: boolean
 }
 
 export interface Role {

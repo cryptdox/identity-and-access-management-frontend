@@ -80,19 +80,18 @@ export default authSlice.reducer
  * Persist only the opaque refresh token + the remember-device flag — never the
  * access token (it's never even in redux, see api/tokenManager.ts), never the
  * user/permissions/roles/groups (always refetched fresh from /auth/me on boot).
- * When rememberDevice is false, nothing is written at all: a reload forces re-login.
+ *
+ * Persisted whenever there's a live refreshToken, regardless of rememberDevice — the
+ * *durability* of that persistence (localStorage, surviving a full browser restart,
+ * vs sessionStorage, surviving only a same-tab refresh) is decided separately by the
+ * custom storage engine in app/rootReducer.ts, keyed off rememberDeviceFlag.ts. So an
+ * unchecked "remember device" still survives a page refresh, just not a closed tab.
  *
  * Which KEYS are even eligible is declared via `whitelist: ['refreshToken',
  * 'rememberDevice']` on the persistConfig in app/rootReducer.ts — redux-persist only
- * invokes this transform for those two keys to begin with. This transform only adds
- * the one thing whitelist can't express: the conditional (only persist when
- * rememberDevice && refreshToken are both truthy), using the 3rd argument
- * (the whole slice state) redux-persist passes alongside each key's own value.
+ * invokes this transform for those two keys to begin with.
  */
 export const authPersistTransform = createTransform<unknown, unknown, AuthState>(
-  (subState, _key, state) => {
-    const shouldPersist = Boolean(state.rememberDevice && state.refreshToken)
-    return shouldPersist ? subState : undefined
-  },
+  (subState, _key, state) => (state.refreshToken ? subState : undefined),
   (subState) => subState,
 )
