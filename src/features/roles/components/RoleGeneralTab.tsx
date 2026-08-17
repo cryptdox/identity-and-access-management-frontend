@@ -48,6 +48,7 @@ export function RoleGeneralTab({ role }: { role: Role }) {
   return (
     <div className="flex max-w-lg flex-col gap-8">
       <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
+        <Input label="Client" value={role.client?.clientId ?? role.clientIdInternal} disabled readOnly />
         <Input
           label="Role name"
           name="name"

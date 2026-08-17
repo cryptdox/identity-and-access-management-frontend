@@ -4,7 +4,7 @@ export interface PermissionResource {
   resourceId: string
   name: ResourceName
   type: TypeResource
-  clientId?: string
+  clientIdInternal: string
 }
 
 export interface Permission {
@@ -14,8 +14,16 @@ export interface Permission {
   resource: PermissionResource
 }
 
+export interface RoleClientSummary {
+  clientIdInternal: string
+  clientId: string
+  name: string | null
+}
+
 export interface Role {
   roleId: string
+  clientIdInternal: string
+  client?: RoleClientSummary
   name: string
   description?: string
   permissions: Permission[]
@@ -24,6 +32,7 @@ export interface Role {
 }
 
 export interface CreateRoleDto {
+  clientIdInternal: string
   name: string
   description?: string
 }

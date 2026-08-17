@@ -26,13 +26,17 @@ export function RolePermissionPanel({ role }: { role: Role }) {
 
   const grouped = useMemo(() => {
     const byResource = new Map<string, { resourceName: string; cells: Map<string, string> }>()
+    // Permissions must belong to a resource owned by this role's own client (enforced
+    // server-side too) — filtering here keeps the grid from offering a selection that
+    // would just be rejected on save.
     for (const perm of data?.data?.items ?? []) {
-      const key = `${perm.resource.name}:${perm.resource.clientId ?? ''}`
+      if (perm.resource.clientIdInternal !== role.clientIdInternal) continue
+      const key = perm.resource.resourceId
       if (!byResource.has(key)) byResource.set(key, { resourceName: perm.resource.name, cells: new Map() })
       byResource.get(key)!.cells.set(perm.action, perm.permissionId)
     }
     return Array.from(byResource.values())
-  }, [data])
+  }, [data, role.clientIdInternal])
 
   function toggle(permissionId: string) {
     setDirty(true)

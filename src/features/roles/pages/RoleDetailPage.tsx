@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useGetRoleQuery } from '@/api/endpoints/role.api'
 import { PageHeader } from '@/common/components/ui/PageHeader'
+import { Badge } from '@/common/components/ui/Badge'
 import { Skeleton } from '@/common/components/ui/Skeleton'
 import { EmptyState } from '@/common/components/ui/EmptyState'
 import { Tabs } from '@/common/components/ui/Tabs'
@@ -28,11 +29,19 @@ export default function RoleDetailPage() {
 
   return (
     <div>
-      <PageHeader title={role.name} description={role.description || 'No description'} />
+      <PageHeader
+        title={role.name}
+        description={role.description || 'No description'}
+        actions={<Badge tone="info">Client: {role.client?.clientId ?? role.clientIdInternal}</Badge>}
+      />
       <Tabs
         items={[
           { key: 'general', label: t('tabs.general'), content: <RoleGeneralTab role={role} /> },
-          { key: 'composite', label: t('tabs.composite'), content: <CompositeRoleEditor roleId={role.roleId} /> },
+          {
+            key: 'composite',
+            label: t('tabs.composite'),
+            content: <CompositeRoleEditor roleId={role.roleId} clientIdInternal={role.clientIdInternal} />,
+          },
           { key: 'permissions', label: t('tabs.permissions'), content: <RolePermissionPanel role={role} /> },
         ]}
       />

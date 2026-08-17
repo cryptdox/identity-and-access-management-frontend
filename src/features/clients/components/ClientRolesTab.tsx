@@ -1,106 +1,49 @@
-import { useState } from 'react'
-import { Trash2, ShieldCheck } from 'lucide-react'
-import {
-  useListClientRolesQuery,
-  useAssignClientRoleMutation,
-  useRemoveClientRoleMutation,
-} from '@/api/endpoints/clientRole.api'
-import { useListRolesQuery } from '@/api/endpoints/role.api'
-import { Select } from '@/common/components/ui/Select'
+import { Plus, ShieldCheck } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useListRolesByClientQuery } from '@/api/endpoints/role.api'
+import { useRealmId } from '@/common/hooks/useRealmId'
 import { Button } from '@/common/components/ui/Button'
 import { EmptyState } from '@/common/components/ui/EmptyState'
 import { Skeleton } from '@/common/components/ui/Skeleton'
-import { confirm } from '@/common/utils/confirm'
-import { useToast } from '@/common/hooks/useToast'
-import { getApiErrorMessage } from '@/common/utils/apiError'
 import { useCan } from '@/common/hooks/usePermission'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 
-export function ClientRolesTab({ clientIdInternal, clientId }: { clientIdInternal: string; clientId: string }) {
-  const canManage = useCan(ResourceName.CLIENT_ROLE, TypeAction.CREATE)
-  const { data: assignedData, isLoading } = useListClientRolesQuery({ clientIdInternal, limit: 200 })
-  const { data: allRolesData } = useListRolesQuery({ limit: 500 })
-  const [assignRole, { isLoading: isAssigning }] = useAssignClientRoleMutation()
-  const [removeRole] = useRemoveClientRoleMutation()
-  const toast = useToast()
-  const [selectedRoleId, setSelectedRoleId] = useState('')
-
-  const assigned = assignedData?.data?.items ?? []
-  const assignedIds = new Set(assigned.map((cr) => cr.roleId))
-  // Role has no clientId column — bootstrap seeds every role as "<CLIENTID>:<NAME>" (see
-  // src/utils/consts.ts ROLES_ARRAY/RESOURCE_ROLES_ARRAY on the backend), so a role's
-  // owning client is encoded as a name prefix rather than a real FK. This is a naming
-  // convention, not an enforced guarantee — a role without any recognizable prefix is
-  // still shown (better a stray global role visible than hiding a legitimate one).
-  const clientPrefix = `${clientId.toUpperCase()}:`
-  const availableRoles = (allRolesData?.data?.items ?? []).filter((r) => {
-    if (assignedIds.has(r.roleId)) return false
-    const hasAnyClientPrefix = /^[^:]+:/.test(r.name)
-    return !hasAnyClientPrefix || r.name.toUpperCase().startsWith(clientPrefix)
-  })
-
-  async function handleAssign() {
-    if (!selectedRoleId) return
-    try {
-      await assignRole({ clientIdInternal, roleId: selectedRoleId }).unwrap()
-      toast.success('Role assigned')
-      setSelectedRoleId('')
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to assign role'))
-    }
-  }
-
-  async function handleRemove(roleId: string, roleName: string) {
-    const confirmed = await confirm({ message: `Remove role "${roleName}" from this client?`, confirmLabel: 'Remove', danger: true })
-    if (!confirmed) return
-    try {
-      await removeRole({ clientIdInternal, roleId }).unwrap()
-      toast.success('Role removed')
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to remove role'))
-    }
-  }
+/** A Role's client is fixed at creation (Role.clientIdInternal) — there's no separate
+ * "assign an existing role to a client" action anymore, so this tab is read-only. New
+ * roles for this client are created from the Roles feature, with the client preset. */
+export function ClientRolesTab({ clientIdInternal }: { clientIdInternal: string }) {
+  const realmId = useRealmId()
+  const navigate = useNavigate()
+  const canCreate = useCan(ResourceName.ROLE, TypeAction.CREATE)
+  const { data, isLoading } = useListRolesByClientQuery({ clientIdInternal, limit: 200 })
+  const roles = data?.data?.items ?? []
 
   return (
     <div className="max-w-lg">
-      {canManage && (
-        <div className="mb-4 flex items-end gap-2">
-          <div className="flex-1">
-            <Select
-              label="Assign a role"
-              placeholder="Select a role…"
-              options={availableRoles.map((r) => ({ value: r.roleId, label: r.name }))}
-              value={selectedRoleId}
-              onChange={(e) => setSelectedRoleId(e.target.value)}
-            />
-          </div>
-          <Button size="sm" loading={isAssigning} disabled={!selectedRoleId} onClick={() => void handleAssign()}>
-            Assign
+      {canCreate && (
+        <div className="mb-4 flex justify-end">
+          <Button size="sm" onClick={() => navigate(`/r/${realmId}/roles/new?clientIdInternal=${clientIdInternal}`)}>
+            <Plus className="size-4" /> Create role for this client
           </Button>
         </div>
       )}
 
       {isLoading ? (
         <Skeleton className="h-24 w-full" />
-      ) : assigned.length === 0 ? (
-        <EmptyState title="No roles assigned" />
+      ) : roles.length === 0 ? (
+        <EmptyState title="No roles for this client" />
       ) : (
         <div className="overflow-hidden rounded-xl border border-border">
-          {assigned.map((cr) => (
-            <div key={cr.roleId} className="flex items-center justify-between border-b border-border px-4 py-2.5 text-sm last:border-0">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="size-4 text-text-secondary" />
-                <span className="text-text">{cr.role?.name ?? cr.roleId}</span>
-              </div>
-              {canManage && (
-                <button
-                  onClick={() => void handleRemove(cr.roleId, cr.role?.name ?? cr.roleId)}
-                  className="rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-danger/10 hover:text-danger"
-                  aria-label="Remove role"
-                >
-                  <Trash2 className="size-4" />
-                </button>
-              )}
+          {roles.map((role) => (
+            <div
+              key={role.roleId}
+              role="link"
+              tabIndex={0}
+              onClick={() => navigate(`/r/${realmId}/roles/${role.roleId}`)}
+              className="flex cursor-pointer items-center gap-2 border-b border-border px-4 py-2.5 text-sm last:border-0 hover:bg-surface-alt/50"
+            >
+              <ShieldCheck className="size-4 text-text-secondary" />
+              <span className="text-text">{role.name}</span>
             </div>
           ))}
         </div>

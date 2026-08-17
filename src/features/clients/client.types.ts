@@ -36,10 +36,3 @@ export interface UpdateClientDto {
   accessTokenTTL?: number
   refreshTokenTTL?: number
 }
-
-export interface ClientRole {
-  clientIdInternal: string
-  roleId: string
-  client?: { clientIdInternal: string; clientId: string; name?: string | null }
-  role?: { roleId: string; name: string }
-}

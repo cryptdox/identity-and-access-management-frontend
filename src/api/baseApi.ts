@@ -15,7 +15,6 @@ export const apiTagTypes = [
   'Role',
   'RoleComposite',
   'Client',
-  'ClientRole',
   'Resource',
   'Permission',
   'Event',

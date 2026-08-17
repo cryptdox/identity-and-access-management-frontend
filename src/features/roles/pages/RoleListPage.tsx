@@ -31,6 +31,7 @@ export default function RoleListPage() {
 
   const columns: DataTableColumn<Role>[] = [
     { key: 'name', header: 'Role', render: (r) => <span className="font-medium">{r.name}</span> },
+    { key: 'client', header: 'Client', render: (r) => r.client?.clientId ?? r.clientIdInternal },
     { key: 'description', header: 'Description', render: (r) => r.description || '—' },
     {
       key: 'permissions',

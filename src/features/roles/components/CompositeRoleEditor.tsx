@@ -5,7 +5,7 @@ import {
   useAddCompositeRoleMutation,
   useRemoveCompositeRoleMutation,
 } from '@/api/endpoints/roleComposite.api'
-import { useListRolesQuery } from '@/api/endpoints/role.api'
+import { useListRolesByClientQuery } from '@/api/endpoints/role.api'
 import { Select } from '@/common/components/ui/Select'
 import { Button } from '@/common/components/ui/Button'
 import { EmptyState } from '@/common/components/ui/EmptyState'
@@ -20,14 +20,16 @@ import { ResourceName, TypeAction } from '@/api/types/enums.types'
 /** Composite roles let this role "include" another role's permissions. Cycle
  * prevention (e.g. A includes B includes A) is enforced server-side — we just
  * surface a rejection via toast rather than re-implementing cycle detection here. */
-export function CompositeRoleEditor({ roleId }: { roleId: string }) {
+export function CompositeRoleEditor({ roleId, clientIdInternal }: { roleId: string; clientIdInternal: string }) {
   const { isMasterRealmUser } = useCurrentUser()
   // Roles are global/shared across tenants, so adding/removing a composite link is
   // restricted server-side to Master-realm admins — mirrored here so the UI doesn't
   // offer an action every tenant admin would just get a 403 back for.
   const canManage = useCan(ResourceName.ROLE_COMPOSITE, TypeAction.CREATE) && isMasterRealmUser
   const { data: compositesData, isLoading } = useListRoleCompositesQuery({ roleId, limit: 200 })
-  const { data: allRolesData } = useListRolesQuery({ limit: 500 })
+  // A composite link is only valid between roles of the SAME client (enforced
+  // server-side), so the picker only ever offers roles this role could actually compose.
+  const { data: sameClientRolesData } = useListRolesByClientQuery({ clientIdInternal, limit: 500 })
   const [addComposite, { isLoading: isAdding }] = useAddCompositeRoleMutation()
   const [removeComposite] = useRemoveCompositeRoleMutation()
   const toast = useToast()
@@ -35,7 +37,7 @@ export function CompositeRoleEditor({ roleId }: { roleId: string }) {
 
   const composites = compositesData?.data?.items ?? []
   const excludedIds = new Set([roleId, ...composites.map((c) => c.compositeRoleId)])
-  const availableRoles = (allRolesData?.data?.items ?? []).filter((r) => !excludedIds.has(r.roleId))
+  const availableRoles = (sameClientRolesData?.data?.items ?? []).filter((r) => !excludedIds.has(r.roleId))
 
   async function handleAdd() {
     if (!selectedRoleId) return

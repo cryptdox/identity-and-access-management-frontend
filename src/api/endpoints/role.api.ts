@@ -18,6 +18,16 @@ export const roleApi = baseApi.injectEndpoints({
       query: (roleId) => ({ url: `/role/${roleId}`, method: 'GET' }),
       providesTags: (_result, _error, roleId) => [{ type: 'Role', id: roleId }],
     }),
+    listRolesByClient: builder.query<ApiResponse<PaginatedData<Role>>, { clientIdInternal: string } & ListQueryParams>({
+      query: ({ clientIdInternal, ...params }) => ({ url: `/role/client/${clientIdInternal}`, method: 'GET', params }),
+      providesTags: (result) =>
+        result?.data
+          ? [
+              ...result.data.items.map((r) => ({ type: 'Role' as const, id: r.roleId })),
+              { type: 'Role' as const, id: 'LIST' },
+            ]
+          : [{ type: 'Role' as const, id: 'LIST' }],
+    }),
     createRole: builder.mutation<ApiResponse<Role>, CreateRoleDto>({
       query: (body) => ({ url: '/role', method: 'POST', data: body }),
       invalidatesTags: [{ type: 'Role', id: 'LIST' }],
@@ -50,6 +60,7 @@ export const roleApi = baseApi.injectEndpoints({
 export const {
   useListRolesQuery,
   useGetRoleQuery,
+  useListRolesByClientQuery,
   useCreateRoleMutation,
   useUpdateRoleMutation,
   useDeleteRoleMutation,
