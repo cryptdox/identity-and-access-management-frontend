@@ -14,13 +14,18 @@ import { confirm } from '@/common/utils/confirm'
 import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
 import { useCan } from '@/common/hooks/usePermission'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 
 /** Composite roles let this role "include" another role's permissions. Cycle
  * prevention (e.g. A includes B includes A) is enforced server-side — we just
  * surface a rejection via toast rather than re-implementing cycle detection here. */
 export function CompositeRoleEditor({ roleId }: { roleId: string }) {
-  const canManage = useCan(ResourceName.ROLE_COMPOSITE, TypeAction.CREATE)
+  const { isMasterRealmUser } = useCurrentUser()
+  // Roles are global/shared across tenants, so adding/removing a composite link is
+  // restricted server-side to Master-realm admins — mirrored here so the UI doesn't
+  // offer an action every tenant admin would just get a 403 back for.
+  const canManage = useCan(ResourceName.ROLE_COMPOSITE, TypeAction.CREATE) && isMasterRealmUser
   const { data: compositesData, isLoading } = useListRoleCompositesQuery({ roleId, limit: 200 })
   const { data: allRolesData } = useListRolesQuery({ limit: 500 })
   const [addComposite, { isLoading: isAdding }] = useAddCompositeRoleMutation()

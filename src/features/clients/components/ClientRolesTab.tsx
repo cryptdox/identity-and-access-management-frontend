@@ -16,7 +16,7 @@ import { getApiErrorMessage } from '@/common/utils/apiError'
 import { useCan } from '@/common/hooks/usePermission'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 
-export function ClientRolesTab({ clientIdInternal }: { clientIdInternal: string }) {
+export function ClientRolesTab({ clientIdInternal, clientId }: { clientIdInternal: string; clientId: string }) {
   const canManage = useCan(ResourceName.CLIENT_ROLE, TypeAction.CREATE)
   const { data: assignedData, isLoading } = useListClientRolesQuery({ clientIdInternal, limit: 200 })
   const { data: allRolesData } = useListRolesQuery({ limit: 500 })
@@ -27,7 +27,17 @@ export function ClientRolesTab({ clientIdInternal }: { clientIdInternal: string 
 
   const assigned = assignedData?.data?.items ?? []
   const assignedIds = new Set(assigned.map((cr) => cr.roleId))
-  const availableRoles = (allRolesData?.data?.items ?? []).filter((r) => !assignedIds.has(r.roleId))
+  // Role has no clientId column — bootstrap seeds every role as "<CLIENTID>:<NAME>" (see
+  // src/utils/consts.ts ROLES_ARRAY/RESOURCE_ROLES_ARRAY on the backend), so a role's
+  // owning client is encoded as a name prefix rather than a real FK. This is a naming
+  // convention, not an enforced guarantee — a role without any recognizable prefix is
+  // still shown (better a stray global role visible than hiding a legitimate one).
+  const clientPrefix = `${clientId.toUpperCase()}:`
+  const availableRoles = (allRolesData?.data?.items ?? []).filter((r) => {
+    if (assignedIds.has(r.roleId)) return false
+    const hasAnyClientPrefix = /^[^:]+:/.test(r.name)
+    return !hasAnyClientPrefix || r.name.toUpperCase().startsWith(clientPrefix)
+  })
 
   async function handleAssign() {
     if (!selectedRoleId) return

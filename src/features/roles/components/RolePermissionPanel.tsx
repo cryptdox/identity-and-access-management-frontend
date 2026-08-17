@@ -4,6 +4,7 @@ import { useRoleMutations } from '@/features/roles/hooks/useRoleMutations'
 import { Button } from '@/common/components/ui/Button'
 import { Skeleton } from '@/common/components/ui/Skeleton'
 import { useCan } from '@/common/hooks/usePermission'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import type { Role } from '@/features/roles/role.types'
 
@@ -12,9 +13,11 @@ const ACTIONS = Object.values(TypeAction)
 /** Assigns EXISTING permission records to a role — creating new resource/permission
  * definitions is Phase 4's job (the Resource x Permission matrix screen). Saving here
  * replaces the role's whole permission set (that's how POST /role/:id/permissions
- * behaves server-side: delete-then-recreate), so we always submit the full selection. */
+ * behaves server-side: delete-then-recreate), so we always submit the full selection.
+ * Roles are global/shared across tenants, so this mutation is Master-only server-side. */
 export function RolePermissionPanel({ role }: { role: Role }) {
-  const canManage = useCan(ResourceName.ROLE, TypeAction.UPDATE)
+  const { isMasterRealmUser } = useCurrentUser()
+  const canManage = useCan(ResourceName.ROLE, TypeAction.UPDATE) && isMasterRealmUser
   const { data, isLoading } = useListPermissionsQuery({ limit: 500 })
   const { assignPermissions, isAssigningPermissions } = useRoleMutations()
 

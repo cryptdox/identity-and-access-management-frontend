@@ -46,7 +46,7 @@ export default function ClientDetailPage() {
         items={[
           { key: 'general', label: t('tabs.general'), content: <ClientGeneralTab client={client} /> },
           { key: 'secret', label: t('tabs.secret'), content: <ClientSecretTab client={client} /> },
-          { key: 'roles', label: t('tabs.roles'), content: <ClientRolesTab clientIdInternal={client.clientIdInternal} /> },
+          { key: 'roles', label: t('tabs.roles'), content: <ClientRolesTab clientIdInternal={client.clientIdInternal} clientId={client.clientId} /> },
         ]}
       />
     </div>

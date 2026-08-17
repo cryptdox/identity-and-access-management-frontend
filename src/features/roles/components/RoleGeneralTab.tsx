@@ -7,6 +7,7 @@ import { Input } from '@/common/components/ui/Input'
 import { Button } from '@/common/components/ui/Button'
 import { confirm } from '@/common/utils/confirm'
 import { useCan } from '@/common/hooks/usePermission'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import type { Role } from '@/features/roles/role.types'
 
@@ -14,8 +15,11 @@ export function RoleGeneralTab({ role }: { role: Role }) {
   const realmId = useRealmId()
   const navigate = useNavigate()
   const { updateRole, deleteRole, isUpdating, isDeleting } = useRoleMutations()
-  const canUpdate = useCan(ResourceName.ROLE, TypeAction.UPDATE)
-  const canDelete = useCan(ResourceName.ROLE, TypeAction.DELETE)
+  const { isMasterRealmUser } = useCurrentUser()
+  // Role has no realm concept — every tenant shares the same global role row, so the
+  // backend restricts updating/deleting an EXISTING role to Master-realm admins only.
+  const canUpdate = useCan(ResourceName.ROLE, TypeAction.UPDATE) && isMasterRealmUser
+  const canDelete = useCan(ResourceName.ROLE, TypeAction.DELETE) && isMasterRealmUser
 
   const formik = useFormik<RoleFormValues>({
     initialValues: { name: role.name, description: role.description ?? '' },
