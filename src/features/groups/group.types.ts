@@ -24,5 +24,5 @@ export interface GroupRole {
   groupId: string
   roleId: string
   group?: { groupId: string; name: string }
-  role?: { roleId: string; name: string }
+  role?: { roleId: string; name: string; client?: { clientIdInternal: string; clientId: string } }
 }

@@ -55,7 +55,16 @@ export default function RoleListPage() {
   }, [debouncedSearch])
 
   const columns: DataTableColumn<Role>[] = [
-    { key: 'name', header: 'Role', render: (r) => <span className="font-medium">{r.name}</span> },
+    {
+      key: 'name',
+      header: 'Role',
+      render: (r) => (
+        <span className="flex items-center gap-2">
+          <Badge tone="neutral">{r.client?.clientId ?? r.clientIdInternal}</Badge>
+          <span className="font-medium">{r.name}</span>
+        </span>
+      ),
+    },
     { key: 'description', header: 'Description', render: (r) => r.description || '—' },
     {
       key: 'permissions',

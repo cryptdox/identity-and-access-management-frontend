@@ -4,5 +4,5 @@ export interface UserRole {
   createdAt?: string
   updatedAt?: string | null
   user?: { userId: string; username: string; email: string }
-  role?: { roleId: string; name: string }
+  role?: { roleId: string; name: string; client?: { clientIdInternal: string; clientId: string } }
 }

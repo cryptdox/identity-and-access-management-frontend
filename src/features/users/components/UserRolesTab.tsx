@@ -6,6 +6,7 @@ import { useListClientsQuery } from '@/api/endpoints/client.api'
 import { useRealmId } from '@/common/hooks/useRealmId'
 import { useDebounce } from '@/common/hooks/useDebounce'
 import { Select } from '@/common/components/ui/Select'
+import { Badge } from '@/common/components/ui/Badge'
 import { SearchMultiSelect, type SearchMultiSelectOption } from '@/common/components/ui/SearchMultiSelect'
 import { Button } from '@/common/components/ui/Button'
 import { EmptyState } from '@/common/components/ui/EmptyState'
@@ -140,6 +141,7 @@ export function UserRolesTab({ userId }: { userId: string }) {
             <div key={ur.roleId} className="flex items-center justify-between border-b border-border px-4 py-2.5 text-sm last:border-0">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="size-4 text-text-secondary" />
+                <Badge tone="neutral">{ur.role?.client?.clientId ?? '—'}</Badge>
                 <span className="text-text">{ur.role?.name ?? ur.roleId}</span>
               </div>
               {canManage && (
