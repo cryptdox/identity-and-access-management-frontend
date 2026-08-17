@@ -99,7 +99,7 @@ export function UserRolesTab({ userId }: { userId: string }) {
             <div className="flex-1">
               <Select
                 label="Client"
-                options={clients.map((c) => ({ value: c.clientIdInternal, label: c.clientId }))}
+                options={clients.map((c) => ({ value: c.clientIdInternal, label: c.clientId ?? c.clientIdInternal }))}
                 value={clientIdInternal}
                 onChange={(e) => {
                   setClientIdInternal(e.target.value)

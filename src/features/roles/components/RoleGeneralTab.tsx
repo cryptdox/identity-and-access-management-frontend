@@ -1,6 +1,5 @@
 import { useFormik } from 'formik'
 import { useNavigate } from 'react-router-dom'
-import type { RoleFormValues } from '@/features/roles/schemas/role.schema'
 import { useRoleMutations } from '@/features/roles/hooks/useRoleMutations'
 import { useRealmId } from '@/common/hooks/useRealmId'
 import { Input } from '@/common/components/ui/Input'
@@ -20,7 +19,7 @@ export function RoleGeneralTab({ role }: { role: Role }) {
   const canUpdate = useCan(ResourceName.ROLE, TypeAction.UPDATE) && Boolean(role.client?.isOwner)
   const canDelete = useCan(ResourceName.ROLE, TypeAction.DELETE) && Boolean(role.client?.isOwner)
 
-  const formik = useFormik<RoleFormValues>({
+  const formik = useFormik<{ name: string; description: string }>({
     initialValues: { name: role.name, description: role.description ?? '' },
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting }) => {

@@ -97,7 +97,7 @@ export default function RoleListPage() {
         />
         <div className="w-56 shrink-0">
           <Select
-            options={clients.map((c) => ({ value: c.clientIdInternal, label: c.clientId }))}
+            options={clients.map((c) => ({ value: c.clientIdInternal, label: c.clientId ?? c.clientIdInternal }))}
             value={clientIdInternal}
             onChange={(e) => {
               setClientIdInternal(e.target.value)

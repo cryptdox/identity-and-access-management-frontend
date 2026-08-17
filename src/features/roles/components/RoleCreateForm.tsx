@@ -44,7 +44,7 @@ export function RoleCreateForm() {
         label="Client"
         name="clientIdInternal"
         placeholder={isClientsLoading ? 'Loading clients…' : 'Select a client…'}
-        options={clients.map((c) => ({ value: c.clientIdInternal, label: c.clientId }))}
+        options={clients.map((c) => ({ value: c.clientIdInternal, label: c.clientId ?? c.clientIdInternal }))}
         value={formik.values.clientIdInternal}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
