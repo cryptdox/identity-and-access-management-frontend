@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Plus } from 'lucide-react'
 import { useGetClientQuery } from '@/api/endpoints/client.api'
 import { useListResourcesQuery } from '@/api/endpoints/resource.api'
-import { useListPermissionsQuery } from '@/api/endpoints/permission.api'
+import { useListPermissionsByClientQuery, useListPermissionsQuery } from '@/api/endpoints/permission.api'
 import { PageHeader } from '@/common/components/ui/PageHeader'
 import { Button } from '@/common/components/ui/Button'
 import { Skeleton } from '@/common/components/ui/Skeleton'
@@ -31,7 +31,7 @@ export default function ResourcePermissionMatrixPage() {
     { clientIdInternal: clientIdInternal ?? '', limit: 200 },
     { skip: !clientIdInternal },
   )
-  const { data: permissionsData, isLoading: isPermissionsLoading } = useListPermissionsQuery({ limit: 1000 })
+  const { data: permissionsData, isLoading: isPermissionsLoading } = useListPermissionsByClientQuery({ clientIdInternal: clientIdInternal ?? '', limit: 1000 })
 
   const rows = useMemo(() => {
     const resources = resourcesData?.data?.items ?? []
