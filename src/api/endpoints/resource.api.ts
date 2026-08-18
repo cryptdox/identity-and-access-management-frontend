@@ -23,7 +23,10 @@ export const resourceApi = baseApi.injectEndpoints({
     // LIST tag instead of trying to match a specific client's cache entry.
     createResources: builder.mutation<ApiResponse<Resource[]>, CreateResourceDto>({
       query: (body) => ({ url: '/resource', method: 'POST', data: body }),
-      invalidatesTags: [{ type: 'Resource', id: 'LIST' }],
+      // The backend seeds permissions for each resource in the same call, so the
+      // Permission list cache is stale too — without this the new resource's row
+      // renders with every checkbox unchecked until a manual reload.
+      invalidatesTags: [{ type: 'Resource', id: 'LIST' }, { type: 'Permission', id: 'LIST' }],
     }),
     bulkUpdateResources: builder.mutation<ApiResponse<unknown>, BulkUpdateResourceDto & { clientIdInternal: string }>({
       query: ({ clientIdInternal: _clientIdInternal, ...body }) => ({ url: '/resource/bulk', method: 'PUT', data: body }),
