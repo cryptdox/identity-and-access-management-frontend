@@ -9,16 +9,16 @@ import type {
   UserProfileDetailsDto,
 } from '@/features/auth/auth.types'
 
-const CLIENT_REALM_CODE_HEADER = 'x-client-realm-code'
+const CR_ACCESS_CODE_HEADER = 'x-cr-access-code'
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<ApiResponse<LoginResponseDto>, LoginRequest>({
-      query: ({ code, ...body }) => ({
+      query: ({ crAccessCode, ...body }) => ({
         url: '/auth/login',
         method: 'POST',
         data: body,
-        headers: { [CLIENT_REALM_CODE_HEADER]: code },
+        headers: { [CR_ACCESS_CODE_HEADER]: crAccessCode },
       }),
     }),
     refresh: builder.mutation<ApiResponse<RefreshTokenResponseDto>, RefreshTokenDto>({
@@ -31,11 +31,11 @@ export const authApi = baseApi.injectEndpoints({
       ApiResponse<{ id: string; email: string; name?: string }>,
       RegisterRequest
     >({
-      query: ({ code, ...body }) => ({
+      query: ({ crAccessCode, ...body }) => ({
         url: '/auth/register',
         method: 'POST',
         data: body,
-        headers: { [CLIENT_REALM_CODE_HEADER]: code },
+        headers: { [CR_ACCESS_CODE_HEADER]: crAccessCode },
       }),
     }),
     getMe: builder.query<ApiResponse<UserProfileDetailsDto>, void>({

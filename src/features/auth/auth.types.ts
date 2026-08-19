@@ -1,11 +1,12 @@
 import type { ResourceName, TypeAction, TypeResource } from '@/api/types/enums.types'
 
 /** Mirrors backend `src/modules/auth/auth.dto.ts` — the request BODY only. The
- * client+realm pair is identified separately via the `x-client-realm-code` header
- * (see auth.api.ts, which pulls `code` off the request type below and sends it as
- * that header instead of a body field). The portal's client is fixed (iam-client),
- * but any realm's users log in through it, so this code varies per realm/tenant and
- * must come from the user at login time — it can't be a single static value. */
+ * client+realm pair is identified separately via the `x-cr-access-code` header
+ * (see auth.api.ts, which pulls `crAccessCode` off the request type below and sends
+ * it as that header instead of a body field). The portal's client is fixed
+ * (iam-client), but any realm's users log in through it, so this code varies per
+ * realm/tenant and must come from the user at login time — it can't be a single
+ * static value. */
 export interface LoginDto {
   clientSecret?: string
   email: string
@@ -13,7 +14,7 @@ export interface LoginDto {
 }
 
 export interface LoginRequest extends LoginDto {
-  code: string
+  crAccessCode: string
 }
 
 export interface RegisterDto {
@@ -23,7 +24,7 @@ export interface RegisterDto {
 }
 
 export interface RegisterRequest extends RegisterDto {
-  code: string
+  crAccessCode: string
 }
 
 export interface RefreshTokenDto {

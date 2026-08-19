@@ -16,6 +16,10 @@ export interface Client {
   // Effective "can the caller manage this client" (already true for Master) —
   // computed server-side from ClientRealm.isOwner relative to the caller's own realm.
   isOwner?: boolean
+  // The caller's realm's access code for this client (ClientRealm.crAccessCode) — sent
+  // as the x-cr-access-code header at login. Undefined if the caller's realm has no
+  // ClientRealm row for this client.
+  crAccessCode?: string
 }
 
 export interface CreateClientDto {

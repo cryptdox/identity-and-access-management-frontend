@@ -10,10 +10,10 @@ import { Button } from '@/common/components/ui/Button'
 import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
 
-// Prefills the code field for local/dev convenience (defaults to the fixed
-// bootstrap iam-client+Master code) — any realm's users still type their own
-// realm's code to log in, this is just what's shown before they do.
-const DEFAULT_CODE = (import.meta.env.VITE_CLIENT_REALM_CODE as string | undefined) ?? 'MASTER'
+// Prefills the access code field for local/dev convenience (defaults to the fixed
+// bootstrap iam-client+Master access code) — any realm's users still type their own
+// realm's access code to log in, this is just what's shown before they do.
+const DEFAULT_CR_ACCESS_CODE = (import.meta.env.VITE_CR_ACCESS_CODE as string | undefined) ?? 'MASTER'
 
 export function LoginForm() {
   const { t } = useTranslation('auth')
@@ -26,7 +26,7 @@ export function LoginForm() {
   const from = (location.state as { from?: Location })?.from?.pathname ?? '/'
 
   const formik = useFormik<LoginFormValues>({
-    initialValues: { code: DEFAULT_CODE, email: '', password: '', rememberDevice: false },
+    initialValues: { crAccessCode: DEFAULT_CR_ACCESS_CODE, email: '', password: '', rememberDevice: false },
     validationSchema: loginSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
@@ -52,12 +52,12 @@ export function LoginForm() {
   return (
     <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
       <Input
-        label={t('realm')}
-        name="code"
-        value={formik.values.code}
+        label={t('crAccessCode')}
+        name="crAccessCode"
+        value={formik.values.crAccessCode}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
-        error={formik.touched.code ? formik.errors.code : undefined}
+        error={formik.touched.crAccessCode ? formik.errors.crAccessCode : undefined}
       />
       <Input
         label={t('email')}

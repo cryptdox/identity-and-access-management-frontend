@@ -3,7 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL: string
   readonly VITE_IAM_CLIENT_ID: string
-  readonly VITE_CLIENT_REALM_CODE: string
+  readonly VITE_CR_ACCESS_CODE: string
 }
 
 interface ImportMeta {

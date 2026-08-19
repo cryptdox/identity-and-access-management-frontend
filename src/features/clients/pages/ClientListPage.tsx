@@ -38,6 +38,11 @@ export default function ClientListPage() {
       header: 'Status',
       render: (c) => <Badge tone={c.enabled ? 'success' : 'neutral'}>{c.enabled ? 'Enabled' : 'Disabled'}</Badge>,
     },
+    {
+      key: 'crAccessCode',
+      header: 'CR Access code',
+      render: (c) => (c.crAccessCode ? <code className="text-xs">{c.crAccessCode}</code> : '—'),
+    },
   ]
 
   return (
