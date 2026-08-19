@@ -8,16 +8,18 @@ export interface AxiosBaseQueryArgs {
   method?: Method
   data?: AxiosRequestConfig['data']
   params?: AxiosRequestConfig['params']
+  headers?: AxiosRequestConfig['headers']
 }
 
 export function axiosBaseQuery(): BaseQueryFn<AxiosBaseQueryArgs, unknown, ApiError> {
-  return async ({ url, method = 'GET', data, params }, api) => {
+  return async ({ url, method = 'GET', data, params, headers }, api) => {
     try {
       const result = await axiosInstance({
         url,
         method,
         data,
         params,
+        headers,
         signal: api.signal,
       })
       return { data: result.data }

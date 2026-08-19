@@ -1,20 +1,29 @@
 import type { ResourceName, TypeAction, TypeResource } from '@/api/types/enums.types'
 
-/** Mirrors backend `src/modules/auth/auth.dto.ts`. */
+/** Mirrors backend `src/modules/auth/auth.dto.ts` — the request BODY only. The
+ * client+realm pair is identified separately via the `x-client-realm-code` header
+ * (see auth.api.ts, which pulls `code` off the request type below and sends it as
+ * that header instead of a body field). The portal's client is fixed (iam-client),
+ * but any realm's users log in through it, so this code varies per realm/tenant and
+ * must come from the user at login time — it can't be a single static value. */
 export interface LoginDto {
-  realmName: string
-  clientId: string
   clientSecret?: string
   email: string
   password: string
 }
 
+export interface LoginRequest extends LoginDto {
+  code: string
+}
+
 export interface RegisterDto {
-  realmName: string
-  clientId: string
   email: string
   password: string
   name?: string
+}
+
+export interface RegisterRequest extends RegisterDto {
+  code: string
 }
 
 export interface RefreshTokenDto {

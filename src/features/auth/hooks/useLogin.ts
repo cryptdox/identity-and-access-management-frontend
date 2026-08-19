@@ -6,8 +6,6 @@ import { tokenManager } from '@/api/tokenManager'
 import { setRememberDevice } from '@/features/auth/rememberDeviceFlag'
 import type { LoginFormValues } from '@/features/auth/schemas/login.schema'
 
-const IAM_CLIENT_ID = (import.meta.env.VITE_IAM_CLIENT_ID as string | undefined) ?? ''
-
 export function useLogin() {
   const [loginMutation, { isLoading }] = useLoginMutation()
   const [fetchMe] = useLazyGetMeQuery()
@@ -15,8 +13,7 @@ export function useLogin() {
 
   const login = async (values: LoginFormValues) => {
     const result = await loginMutation({
-      realmName: values.realmName,
-      clientId: IAM_CLIENT_ID,
+      code: values.code,
       email: values.email,
       password: values.password,
     }).unwrap()
