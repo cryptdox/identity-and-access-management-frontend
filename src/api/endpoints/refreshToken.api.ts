@@ -5,6 +5,7 @@ import type { RefreshToken } from '@/features/tokens/token.types'
 export interface ListRefreshTokensParams extends ListQueryParams {
   userId?: string
   sessionId?: string
+  clientIdInternal?: string
   revoked?: boolean
 }
 

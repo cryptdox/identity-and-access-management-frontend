@@ -38,6 +38,7 @@ export default function RefreshTokensPage() {
   const columns: DataTableColumn<RefreshToken>[] = [
     { key: 'userId', header: 'User ID', render: (token) => <span className="font-mono text-xs">{token.userId}</span> },
     { key: 'sessionId', header: 'Session ID', render: (token) => <span className="font-mono text-xs">{token.sessionId}</span> },
+    { key: 'clientIdInternal', header: 'Client ID', render: (token) => <span className="font-mono text-xs">{token.clientIdInternal}</span> },
     { key: 'expiresAt', header: 'Expires', render: (token) => formatDateTime(token.expiresAt) },
     {
       key: 'revoked',
