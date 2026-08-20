@@ -29,6 +29,10 @@ export interface Role {
   client?: RoleClientSummary
   name: string
   description?: string
+  // True for the standard ADMIN/MANAGER/VIEWER/AUDITOR/USER set every client is
+  // seeded with at creation — the backend refuses to delete these regardless of
+  // ownership, so the delete action must stay hidden for them here too.
+  seedValue?: boolean
   permissions: Permission[]
   createdAt?: string
   updatedAt?: string

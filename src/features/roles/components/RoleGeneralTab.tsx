@@ -17,7 +17,9 @@ export function RoleGeneralTab({ role }: { role: Role }) {
   // A role belongs to one client — only that client's owning realm may edit/delete it
   // (role.client.isOwner already folds in the Master bypass server-side).
   const canUpdate = useCan(ResourceName.ROLE, TypeAction.UPDATE) && Boolean(role.client?.isOwner)
-  const canDelete = useCan(ResourceName.ROLE, TypeAction.DELETE) && Boolean(role.client?.isOwner)
+  // Seed roles (ADMIN/MANAGER/VIEWER/AUDITOR/USER) can never be deleted, even by the
+  // owning realm — the backend rejects it outright, so hide the action entirely.
+  const canDelete = useCan(ResourceName.ROLE, TypeAction.DELETE) && Boolean(role.client?.isOwner) && !role.seedValue
 
   const formik = useFormik<{ name: string; description: string }>({
     initialValues: { name: role.name, description: role.description ?? '' },
