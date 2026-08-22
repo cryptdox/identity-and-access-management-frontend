@@ -31,12 +31,16 @@ export default function SessionsPage() {
   const canReadAll = useCan(ResourceName.SESSION, TypeAction.READ_ALL)
   const { params, page, setPage, state } = usePagination({ sortBy: 'lastAccess', sortOrder: 'desc' })
   const [revokedFilter, setRevokedFilter] = useState('')
-  const { data, isFetching } = useListUserSessionsQuery({
+  const listArgs = {
     ...params,
     realmId,
     revoked: revokedFilter === '' ? undefined : revokedFilter === 'true',
-  })
-  const [revokeSession, { isLoading: isRevoking }] = useRevokeUserSessionMutation()
+  }
+  const { data, isFetching } = useListUserSessionsQuery(listArgs)
+  const [revokeSession] = useRevokeUserSessionMutation()
+  // Tracks which row is being revoked so only THAT row's button shows a spinner —
+  // isLoading from the mutation hook is shared across every row, not per-row.
+  const [revokingId, setRevokingId] = useState<string | null>(null)
   const toast = useToast()
 
   const statusOptions = [
@@ -46,13 +50,22 @@ export default function SessionsPage() {
   ]
 
   async function handleRevoke(userSessionId: string) {
-    const confirmed = await confirm({ message: t('revokeConfirm'), confirmLabel: t('revoke'), danger: true })
+    const confirmed = await confirm({
+      message: 'Revoke this session? Any still-valid refresh token issued to it is revoked too, signing the user out on that device.',
+      confirmLabel: t('revoke'),
+      danger: true,
+    })
     if (!confirmed) return
+    setRevokingId(userSessionId)
     try {
-      await revokeSession({ userSessionId, realmId }).unwrap()
+      // Passing listArgs patches this one row's `revoked` straight in the cache on
+      // success instead of invalidating and refetching the whole list.
+      await revokeSession({ userSessionId, realmId, listArgs }).unwrap()
       toast.success('Session revoked')
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Failed to revoke session'))
+    } finally {
+      setRevokingId(null)
     }
   }
 
@@ -80,7 +93,7 @@ export default function SessionsPage() {
             render: (s: UserSession) => {
               const canRevokeThis = canUpdateAll || (canUpdate && s.userId === user?.userId)
               return !s.revoked && canRevokeThis && (
-                <Button size="sm" variant="outline" loading={isRevoking} onClick={() => void handleRevoke(s.userSessionId)}>
+                <Button size="sm" variant="outline" loading={revokingId === s.userSessionId} onClick={() => void handleRevoke(s.userSessionId)}>
                   {t('revoke')}
                 </Button>
               )

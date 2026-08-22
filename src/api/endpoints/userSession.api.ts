@@ -19,12 +19,29 @@ export const userSessionApi = baseApi.injectEndpoints({
     }),
     revokeUserSession: builder.mutation<
       ApiResponse<UserSession>,
-      { userSessionId: string; userId?: string; realmId?: string }
+      // `listArgs` — the exact params object the caller's active listUserSessions
+      // query is using — lets a successful revoke patch that one row's `revoked`
+      // directly in the cache instead of invalidating the whole list and refetching
+      // it. Omit it and this falls back to the old invalidate-and-refetch behavior.
+      { userSessionId: string; userId?: string; realmId?: string; listArgs?: ListUserSessionsParams }
     >({
       query: ({ userSessionId }) => ({ url: `/user-session/${userSessionId}`, method: 'PUT', data: { revoked: true } }),
-      invalidatesTags: (_result, _error, { userId, realmId }) => [
-        { type: 'UserSession', id: userId ?? realmId ?? 'LIST' },
-      ],
+      invalidatesTags: (_result, _error, { userId, realmId, listArgs }) =>
+        listArgs ? [] : [{ type: 'UserSession', id: userId ?? realmId ?? 'LIST' }],
+      async onQueryStarted({ userSessionId, listArgs }, { dispatch, queryFulfilled }) {
+        if (!listArgs) return
+        const patch = dispatch(
+          userSessionApi.util.updateQueryData('listUserSessions', listArgs, (draft) => {
+            const item = draft.data?.items.find((s) => s.userSessionId === userSessionId)
+            if (item) item.revoked = true
+          }),
+        )
+        try {
+          await queryFulfilled
+        } catch {
+          patch.undo()
+        }
+      },
     }),
     deleteUserSession: builder.mutation<
       ApiResponse<null>,

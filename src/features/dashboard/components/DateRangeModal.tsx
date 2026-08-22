@@ -6,14 +6,17 @@ import { Button } from '@/common/components/ui/Button'
 
 // Matches the app's own primary token so the calendar's accent doesn't clash with
 // the rest of the theme (light/dark both resolve --tk-primary correctly already).
-// Day cells are also shrunk from the 44px default — at default size, two months
-// side by side overflowed the modal (and small screens) horizontally.
+// Day cells are also shrunk well below the 44px default — this is a small popup
+// control, not a full-page calendar.
 const RDP_THEME_VARS = {
   '--rdp-accent-color': 'var(--tk-primary)',
-  '--rdp-day-width': '2.25rem',
-  '--rdp-day-height': '2.25rem',
-  '--rdp-day_button-width': '2.1rem',
-  '--rdp-day_button-height': '2.1rem',
+  '--rdp-day-width': '1.85rem',
+  '--rdp-day-height': '1.85rem',
+  '--rdp-day_button-width': '1.75rem',
+  '--rdp-day_button-height': '1.75rem',
+  '--rdp-nav-height': '2rem',
+  '--rdp-nav_button-width': '1.75rem',
+  '--rdp-nav_button-height': '1.75rem',
 } as CSSProperties
 
 /** A single calendar where both the start and end date are picked in one place —
@@ -44,12 +47,12 @@ export function DateRangeModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Select date range" size="lg">
+    <Modal open={open} onClose={onClose} title="Select date range" size="sm">
       <div className="max-h-[75vh] overflow-y-auto">
-        <div style={RDP_THEME_VARS} className="flex justify-center overflow-x-auto">
+        <div style={RDP_THEME_VARS} className="flex justify-center text-xs">
           <DayPicker
             mode="range"
-            numberOfMonths={2}
+            numberOfMonths={1}
             selected={range}
             onSelect={setRange}
             disabled={{ after: new Date() }}
@@ -57,7 +60,7 @@ export function DateRangeModal({
           />
         </div>
       </div>
-      <div className="mt-4 flex justify-end gap-2">
+      <div className="mt-3 flex justify-end gap-2">
         <Button type="button" variant="outline" size="sm" onClick={onClose}>
           Cancel
         </Button>
