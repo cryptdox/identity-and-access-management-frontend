@@ -6,16 +6,16 @@ import { TypeEvent } from '@/api/types/enums.types'
 export function EventFilterBar({
   type,
   onTypeChange,
-  userId,
-  onUserIdChange,
+  userSearch,
+  onUserSearchChange,
   hideUserFilter,
 }: {
   type: string
   onTypeChange: (value: string) => void
-  userId: string
-  onUserIdChange: (value: string) => void
+  userSearch: string
+  onUserSearchChange: (value: string) => void
   // True when the backend is force-scoping this list to the caller's own events
-  // (no EVENT:READ_ALL) — the userId filter would be a dead control in that case.
+  // (no EVENT:READ_ALL) — the search filter would be a dead control in that case.
   hideUserFilter?: boolean
 }) {
   const { t } = useTranslation('events')
@@ -31,7 +31,7 @@ export function EventFilterBar({
       </div>
       {!hideUserFilter && (
         <div className="w-64">
-          <Input placeholder={t('filterByUser')} value={userId} onChange={(e) => onUserIdChange(e.target.value)} />
+          <Input placeholder={t('filterByUser')} value={userSearch} onChange={(e) => onUserSearchChange(e.target.value)} />
         </div>
       )}
     </div>

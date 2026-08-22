@@ -4,6 +4,8 @@ import type { RefreshToken } from '@/features/tokens/token.types'
 
 export interface ListRefreshTokensParams extends ListQueryParams {
   userId?: string
+  // Case-insensitive match against the token's user's display name/username/email.
+  userSearch?: string
   sessionId?: string
   clientIdInternal?: string
   revoked?: boolean

@@ -3,5 +3,5 @@
   "description": "Audit log of security-relevant activity in this realm.",
   "empty": "No events found.",
   "filter.allTypes": "All event types",
-  "filterByUser": "Filter by user ID…"
+  "filterByUser": "Search by name, username, or email…"
 }

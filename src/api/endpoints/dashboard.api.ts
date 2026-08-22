@@ -2,6 +2,7 @@ import { baseApi } from '@/api/baseApi'
 import type { ApiResponse } from '@/api/types/common.types'
 import type {
   CreateDashboardViewDto,
+  DashboardTimeRange,
   DashboardView,
   DashboardViewTypeMeta,
   DashboardViewWithData,
@@ -13,8 +14,8 @@ export const dashboardApi = baseApi.injectEndpoints({
     getDashboardViewTypes: builder.query<ApiResponse<DashboardViewTypeMeta[]>, void>({
       query: () => ({ url: '/dashboard/view-types', method: 'GET' }),
     }),
-    getDashboardData: builder.query<ApiResponse<DashboardViewWithData[]>, void>({
-      query: () => ({ url: '/dashboard/data', method: 'GET' }),
+    getDashboardData: builder.query<ApiResponse<DashboardViewWithData[]>, DashboardTimeRange | void>({
+      query: (params) => ({ url: '/dashboard/data', method: 'GET', params: params ?? undefined }),
       providesTags: [{ type: 'Dashboard', id: 'DATA' }],
     }),
     getClientDashboardViews: builder.query<ApiResponse<DashboardView[]>, string>({

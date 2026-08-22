@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useListEventsQuery } from '@/api/endpoints/event.api'
 import { useRealmId } from '@/common/hooks/useRealmId'
 import { usePagination } from '@/common/hooks/usePagination'
+import { useDebounce } from '@/common/hooks/useDebounce'
 import { PageHeader } from '@/common/components/ui/PageHeader'
 import { DataTable, type DataTableColumn } from '@/common/components/ui/DataTable'
 import { Badge } from '@/common/components/ui/Badge'
@@ -32,15 +33,16 @@ export default function EventsPage() {
   const realmId = useRealmId()
   const { page, setPage, state } = usePagination({ sortBy: 'createdAt', sortOrder: 'desc' })
   // Without EVENT:READ_ALL, the backend force-scopes this list to the caller's own
-  // events — adjust the framing and hide the now-dead userId filter to match.
+  // events — adjust the framing and hide the now-dead search filter to match.
   const canReadAll = useCan(ResourceName.EVENT, TypeAction.READ_ALL)
   const [type, setType] = useState('')
-  const [userId, setUserId] = useState('')
+  const [userSearch, setUserSearch] = useState('')
+  const debouncedUserSearch = useDebounce(userSearch, 300)
 
   const { data, isFetching } = useListEventsQuery({
     realmId,
     type: (type || undefined) as TypeEvent | undefined,
-    userId: userId || undefined,
+    userSearch: debouncedUserSearch || undefined,
     offset: page * state.limit,
     limit: state.limit,
     sortBy: state.sortBy,
@@ -61,7 +63,7 @@ export default function EventsPage() {
   return (
     <div>
       <PageHeader title={canReadAll ? t('title') : 'My activity'} description={canReadAll ? t('description') : 'Events recorded for your own account.'} />
-      <EventFilterBar type={type} onTypeChange={setType} userId={userId} onUserIdChange={setUserId} hideUserFilter={!canReadAll} />
+      <EventFilterBar type={type} onTypeChange={setType} userSearch={userSearch} onUserSearchChange={setUserSearch} hideUserFilter={!canReadAll} />
 
       <DataTable<Event>
         columns={columns}

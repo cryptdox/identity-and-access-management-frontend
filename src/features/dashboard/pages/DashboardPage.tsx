@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Users, FolderTree, ShieldCheck, AppWindow, Building2, Activity, KeyRound, History, LayoutGrid } from 'lucide-react'
 import { useGetRealmQuery } from '@/api/endpoints/realm.api'
 import { useGetDashboardDataQuery } from '@/api/endpoints/dashboard.api'
@@ -6,7 +7,25 @@ import { PageHeader } from '@/common/components/ui/PageHeader'
 import { Skeleton } from '@/common/components/ui/Skeleton'
 import { EmptyState } from '@/common/components/ui/EmptyState'
 import { FadeIn } from '@/common/components/transitions/FadeIn'
-import type { DashboardViewWithData } from '@/features/dashboard/dashboard.types'
+import { TimeRangePicker } from '@/features/dashboard/components/TimeRangePicker'
+import { DashboardChart } from '@/features/dashboard/components/DashboardChart'
+import type { DashboardChartType, DashboardTimeRange, DashboardViewWithData } from '@/features/dashboard/dashboard.types'
+
+// Which chart types make sense for each data kind — a breakdown (category snapshot)
+// has no continuous x-axis, so LINE/SCATTER don't apply to it the way they do to a
+// timeseries.
+const CHART_TYPE_CHOICES: Record<'timeseries' | 'breakdown', { value: DashboardChartType; label: string }[]> = {
+  timeseries: [
+    { value: 'BAR', label: 'Bar' },
+    { value: 'LINE', label: 'Line' },
+    { value: 'AREA', label: 'Area' },
+    { value: 'SCATTER', label: 'Scatter' },
+  ],
+  breakdown: [
+    { value: 'PIE', label: 'Pie' },
+    { value: 'BAR', label: 'Bar' },
+  ],
+}
 
 const ICON_BY_TYPE: Record<string, typeof Users> = {
   USER_COUNT: Users,
@@ -20,7 +39,7 @@ const ICON_BY_TYPE: Record<string, typeof Users> = {
   RECENT_EVENTS: History,
 }
 
-function DashboardCard({ view, delay }: { view: DashboardViewWithData; delay: number }) {
+function StatCard({ view, delay }: { view: DashboardViewWithData; delay: number }) {
   const Icon = ICON_BY_TYPE[view.type] ?? LayoutGrid
 
   return (
@@ -40,12 +59,51 @@ function DashboardCard({ view, delay }: { view: DashboardViewWithData; delay: nu
   )
 }
 
+function ChartCard({ view, delay }: { view: DashboardViewWithData; delay: number }) {
+  const kind = view.data.kind === 'breakdown' ? 'breakdown' : 'timeseries'
+  const choices = CHART_TYPE_CHOICES[kind]
+  // Local-only preview switch — lets a viewer see the same data as, say, a line
+  // instead of a bar, without needing an admin to change the view's saved chartType.
+  const [chartType, setChartType] = useState<DashboardChartType>(
+    choices.some((c) => c.value === view.chartType) ? view.chartType : choices[0].value,
+  )
+
+  return (
+    <FadeIn delay={delay}>
+      <div className="rounded-2xl border border-border bg-surface p-5">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <p className="text-sm font-medium text-text">{view.name}</p>
+          <div className="flex gap-1">
+            {choices.map((c) => (
+              <button
+                key={c.value}
+                type="button"
+                onClick={() => setChartType(c.value)}
+                className={`rounded-md px-2 py-0.5 text-xs transition-colors ${
+                  chartType === c.value ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:bg-surface-alt'
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <DashboardChart chartType={chartType} data={view.data} />
+      </div>
+    </FadeIn>
+  )
+}
+
 export default function DashboardPage() {
   const realmId = useRealmId()
   const { data: realmData, isLoading: isRealmLoading } = useGetRealmQuery(realmId)
-  const { data: dashboardData, isLoading: isDashboardLoading } = useGetDashboardDataQuery()
+  const [range, setRange] = useState<DashboardTimeRange>()
+  const { data: dashboardData, isLoading: isDashboardLoading } = useGetDashboardDataQuery(range)
 
   const views = dashboardData?.data ?? []
+  const statViews = views.filter((v) => v.data.kind === 'count' || v.data.kind === 'list')
+  const chartViews = views.filter((v) => v.data.kind === 'timeseries' || v.data.kind === 'breakdown')
+  const hasTimeseries = views.some((v) => v.data.kind === 'timeseries')
 
   return (
     <div>
@@ -67,11 +125,26 @@ export default function DashboardPage() {
           description="Ask an admin to assign some from one of your roles' Dashboard tab."
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {views.map((view, i) => (
-            <DashboardCard key={view.dashboardViewId} view={view} delay={i * 0.05} />
-          ))}
-        </div>
+        <>
+          {statViews.length > 0 && (
+            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {statViews.map((view, i) => (
+                <StatCard key={view.dashboardViewId} view={view} delay={i * 0.05} />
+              ))}
+            </div>
+          )}
+
+          {chartViews.length > 0 && (
+            <div>
+              {hasTimeseries && <TimeRangePicker onChange={setRange} />}
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                {chartViews.map((view, i) => (
+                  <ChartCard key={view.dashboardViewId} view={view} delay={i * 0.05} />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

@@ -6,6 +6,8 @@ import type { Event } from '@/features/events/event.types'
 export interface ListEventsParams {
   realmId?: string
   userId?: string
+  // Case-insensitive match against the event's user's display name/username/email.
+  userSearch?: string
   clientIdInternal?: string
   type?: TypeEvent
   offset?: number

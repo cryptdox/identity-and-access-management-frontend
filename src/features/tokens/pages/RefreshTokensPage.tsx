@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useListRefreshTokensQuery, useRevokeRefreshTokenMutation } from '@/api/endpoints/refreshToken.api'
 import { usePagination } from '@/common/hooks/usePagination'
 import { useRealmId } from '@/common/hooks/useRealmId'
+import { useDebounce } from '@/common/hooks/useDebounce'
 import { PageHeader } from '@/common/components/ui/PageHeader'
 import { DataTable, type DataTableColumn } from '@/common/components/ui/DataTable'
 import { Badge } from '@/common/components/ui/Badge'
@@ -28,12 +29,13 @@ export default function RefreshTokensPage() {
   const canUpdate = useCan(ResourceName.REFRESH_TOKEN, TypeAction.UPDATE)
   const canUpdateAll = useCan(ResourceName.REFRESH_TOKEN, TypeAction.UPDATE_ALL)
   // Without REFRESH_TOKEN:READ_ALL, the backend force-scopes this list to the
-  // caller's own tokens regardless of the userId filter below — hide that filter
+  // caller's own tokens regardless of the search filter below — hide that filter
   // in that case since it'd be a dead control, not a real admin search.
   const canReadAll = useCan(ResourceName.REFRESH_TOKEN, TypeAction.READ_ALL)
   const { params, page, setPage, state } = usePagination()
-  const [userId, setUserId] = useState('')
-  const { data, isFetching } = useListRefreshTokensQuery({ ...params, realmId, userId: userId || undefined })
+  const [userSearch, setUserSearch] = useState('')
+  const debouncedUserSearch = useDebounce(userSearch, 300)
+  const { data, isFetching } = useListRefreshTokensQuery({ ...params, realmId, userSearch: debouncedUserSearch || undefined })
   const [revokeToken, { isLoading: isRevoking }] = useRevokeRefreshTokenMutation()
   const toast = useToast()
 
@@ -82,7 +84,7 @@ export default function RefreshTokensPage() {
 
       {canReadAll && (
         <div className="mb-4 max-w-xs">
-          <Input placeholder={t('filterByUser')} value={userId} onChange={(e) => setUserId(e.target.value)} />
+          <Input placeholder={t('filterByUser')} value={userSearch} onChange={(e) => setUserSearch(e.target.value)} />
         </div>
       )}
 
