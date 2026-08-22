@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useListRefreshTokensQuery, useRevokeRefreshTokenMutation } from '@/api/endpoints/refreshToken.api'
 import { usePagination } from '@/common/hooks/usePagination'
+import { useRealmId } from '@/common/hooks/useRealmId'
 import { PageHeader } from '@/common/components/ui/PageHeader'
 import { DataTable, type DataTableColumn } from '@/common/components/ui/DataTable'
 import { Badge } from '@/common/components/ui/Badge'
@@ -20,6 +21,7 @@ import type { RefreshToken } from '@/features/tokens/token.types'
 
 export default function RefreshTokensPage() {
   const { t } = useTranslation('tokens')
+  const realmId = useRealmId()
   const { user } = useCurrentUser()
   // Plain UPDATE only revokes the caller's OWN token (backend enforces this too —
   // it's not just a UI nicety) — UPDATE_ALL is required to revoke anyone else's.
@@ -31,7 +33,7 @@ export default function RefreshTokensPage() {
   const canReadAll = useCan(ResourceName.REFRESH_TOKEN, TypeAction.READ_ALL)
   const { params, page, setPage, state } = usePagination()
   const [userId, setUserId] = useState('')
-  const { data, isFetching } = useListRefreshTokensQuery({ ...params, userId: userId || undefined })
+  const { data, isFetching } = useListRefreshTokensQuery({ ...params, realmId, userId: userId || undefined })
   const [revokeToken, { isLoading: isRevoking }] = useRevokeRefreshTokenMutation()
   const toast = useToast()
 

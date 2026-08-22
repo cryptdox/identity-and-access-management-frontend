@@ -7,13 +7,14 @@ export interface ListRefreshTokensParams extends ListQueryParams {
   sessionId?: string
   clientIdInternal?: string
   revoked?: boolean
+  // RefreshToken has no realmId column of its own — the backend filters
+  // transitively via the owning user (`user.realmId`), and force-overrides this to
+  // the caller's own realm unless they're Master.
+  realmId?: string
 }
 
 export const refreshTokenApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // Note: this endpoint has no realmId filter server-side (RefreshToken has no
-    // direct realmId column, only userId/sessionId) — the Refresh Tokens page can
-    // only filter by user, not scope strictly to the current realm.
     listRefreshTokens: builder.query<ApiResponse<PaginatedData<RefreshToken>>, ListRefreshTokensParams | void>({
       query: (params) => ({ url: '/refresh-token', method: 'GET', params: params ?? undefined }),
       providesTags: (result) =>
