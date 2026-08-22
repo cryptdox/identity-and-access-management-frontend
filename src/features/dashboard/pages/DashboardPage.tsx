@@ -60,8 +60,8 @@ function StatCard({ view, delay }: { view: DashboardViewWithData; delay: number 
 }
 
 function ChartCard({ view, delay }: { view: DashboardViewWithData; delay: number }) {
-  const kind = view.data.kind === 'breakdown' ? 'breakdown' : 'timeseries'
-  const choices = CHART_TYPE_CHOICES[kind]
+  const isBreakdown = view.data.kind === 'breakdown'
+  const choices = CHART_TYPE_CHOICES[isBreakdown ? 'breakdown' : 'timeseries']
   // Local-only preview switch — lets a viewer see the same data as, say, a line
   // instead of a bar, without needing an admin to change the view's saved chartType.
   const [chartType, setChartType] = useState<DashboardChartType>(
@@ -72,7 +72,16 @@ function ChartCard({ view, delay }: { view: DashboardViewWithData; delay: number
     <FadeIn delay={delay}>
       <div className="rounded-2xl border border-border bg-surface p-5">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <p className="text-sm font-medium text-text">{view.name}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium text-text">{view.name}</p>
+            {/* This view is a single all-time snapshot — it does NOT change with the
+            time-range picker above, unlike the timeseries charts in that section. */}
+            {isBreakdown && (
+              <span className="rounded-full bg-surface-alt px-2 py-0.5 text-xs text-text-secondary" title="This chart always shows all-time data — it doesn't follow the date range above.">
+                All-time
+              </span>
+            )}
+          </div>
           <div className="flex gap-1">
             {choices.map((c) => (
               <button
@@ -102,8 +111,11 @@ export default function DashboardPage() {
 
   const views = dashboardData?.data ?? []
   const statViews = views.filter((v) => v.data.kind === 'count' || v.data.kind === 'list')
-  const chartViews = views.filter((v) => v.data.kind === 'timeseries' || v.data.kind === 'breakdown')
-  const hasTimeseries = views.some((v) => v.data.kind === 'timeseries')
+  // Kept as two separate sections (not one shared grid) specifically so the
+  // TimeRangePicker's scope is unambiguous — it only ever governs the timeseries
+  // charts directly under it, never the all-time breakdowns below.
+  const timeseriesViews = views.filter((v) => v.data.kind === 'timeseries')
+  const breakdownViews = views.filter((v) => v.data.kind === 'breakdown')
 
   return (
     <div>
@@ -134,11 +146,27 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {chartViews.length > 0 && (
-            <div>
-              {hasTimeseries && <TimeRangePicker onChange={setRange} />}
+          {timeseriesViews.length > 0 && (
+            <div className="mb-6">
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-text-secondary">
+                Over the selected time range
+              </p>
+              <TimeRangePicker onChange={setRange} />
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                {chartViews.map((view, i) => (
+                {timeseriesViews.map((view, i) => (
+                  <ChartCard key={view.dashboardViewId} view={view} delay={i * 0.05} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {breakdownViews.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-text-secondary">
+                All-time — not affected by the time range above
+              </p>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                {breakdownViews.map((view, i) => (
                   <ChartCard key={view.dashboardViewId} view={view} delay={i * 0.05} />
                 ))}
               </div>
