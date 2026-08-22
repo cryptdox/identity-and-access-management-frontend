@@ -20,17 +20,19 @@ export function AssignedPackagesTab() {
   const { data: definitionsData } = useListPackageModuleDefinitionsQuery()
   const definitionOptions = [
     { value: '', label: 'All plans' },
-    ...(definitionsData?.data ?? []).map((d) => ({
-      value: d.packageDefinitionId,
+    ...(definitionsData?.data?.items ?? []).map((d) => ({
+      value: `${d.tier}|${d.billingCycle}`,
       label: `${d.tier} (${d.billingCycle})`,
     })),
   ]
+  const [filterTier, filterBillingCycle] = definitionFilter ? definitionFilter.split('|') : [undefined, undefined]
 
   const [trigger] = useLazyListAssignedPackagesQuery()
   const { items, isLoading, isLoadingMore, hasMore, loadMore } = useCursorList(trigger, {
     limit: 20,
     realmName: debouncedRealmSearch || undefined,
-    packageDefinitionId: definitionFilter || undefined,
+    tier: filterTier,
+    billingCycle: filterBillingCycle,
   })
 
   const columns: DataTableColumn<RealmPackageWithRealm>[] = [
@@ -38,16 +40,15 @@ export function AssignedPackagesTab() {
     {
       key: 'plan',
       header: 'Plan',
-      render: (r) => `${r.packageDefinition.tier} (${r.packageDefinition.billingCycle})`,
+      render: (r) => (r.currentPackage ? `${r.currentPackage.tier} (${r.currentPackage.billingCycle})` : '—'),
     },
-    { key: 'userLimit', header: 'User limit', render: (r) => r.packageDefinition.userLimit ?? 'Unlimited' },
+    { key: 'userLimit', header: 'User limit', render: (r) => r.currentPackage?.userLimit ?? 'Unlimited' },
     {
       key: 'concurrentLoginLimit',
       header: 'Concurrent logins',
-      render: (r) => r.packageDefinition.concurrentLoginLimit ?? 'Unlimited',
+      render: (r) => r.currentPackage?.concurrentLoginLimit ?? 'Unlimited',
     },
-    { key: 'activeFrom', header: 'Active from', render: (r) => formatDate(r.activeFrom) },
-    { key: 'activeTo', header: 'Active to', render: (r) => formatDate(r.activeTo) },
+    { key: 'packageExpiresAt', header: 'Expires', render: (r) => (r.packageExpiresAt ? formatDate(r.packageExpiresAt) : '—') },
   ]
 
   return (
@@ -68,7 +69,7 @@ export function AssignedPackagesTab() {
       <DataTable<RealmPackageWithRealm>
         columns={columns}
         rows={items}
-        rowKey={(r) => r.realmPackageId}
+        rowKey={(r) => r.realmId}
         loading={isLoading}
         hasMore={hasMore}
         loadingMore={isLoadingMore}

@@ -92,10 +92,22 @@ export const realmApi = baseApi.injectEndpoints({
     >({
       query: (params) => ({ url: '/realm/cursor-list', method: 'GET', params: params ?? undefined }),
     }),
-    // Public — no auth, used by the landing page pricing table and the
-    // package-change pickers on the Package tab.
-    listPackageDefinitions: builder.query<ApiResponse<PackageDefinition[]>, void>({
+    // Public — no auth, used ONLY by the landing page pricing table. Carries a
+    // 7-day Cache-Control on the backend, deliberately — the landing page
+    // doesn't need fresh-every-load data. Any authenticated in-app consumer
+    // (plan pickers etc.) must use listAuthenticatedPackageDefinitions below
+    // instead, NOT this one — sharing this endpoint/cache with the app's own
+    // pickers is exactly what made a realm's Package tab show a stale/empty
+    // catalog after the backend's package-definitions response shape changed.
+    listPackageDefinitions: builder.query<ApiResponse<CursorPage<PackageDefinition>>, void>({
       query: () => ({ url: '/package-definitions', method: 'GET' }),
+    }),
+    // Authenticated — every in-app plan picker (RealmPackageTab, etc.) uses
+    // THIS, not the public one above. Different URL (so it's a distinct
+    // browser HTTP-cache entry) and a distinct RTK Query endpoint (so it's a
+    // distinct in-memory cache entry too) — never cached, always fresh.
+    listAuthenticatedPackageDefinitions: builder.query<ApiResponse<CursorPage<PackageDefinition>>, void>({
+      query: () => ({ url: '/realm/package-definitions', method: 'GET' }),
     }),
     // Public — creates a disabled realm + disabled admin user, pending Master's review.
     requestRealm: builder.mutation<ApiResponse<{ message: string }>, RequestRealmDto>({
@@ -163,6 +175,7 @@ export const {
   useResetAllRateLimitersMutation,
   useLazyListRealmsCursorQuery,
   useListPackageDefinitionsQuery,
+  useListAuthenticatedPackageDefinitionsQuery,
   useRequestRealmMutation,
   useGetRealmPackageQuery,
   useGetRealmPackageHistoryQuery,

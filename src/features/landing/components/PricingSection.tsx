@@ -13,7 +13,7 @@ export function PricingSection({ onRequestAccess }: { onRequestAccess: () => voi
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('MONTHLY')
   const { data, isLoading } = useListPackageDefinitionsQuery()
 
-  const definitions = data?.data ?? []
+  const definitions = data?.data?.items ?? []
   const cards = TIER_ORDER.map((tier) => definitions.find((d) => d.tier === tier && d.billingCycle === billingCycle)).filter(
     Boolean,
   )

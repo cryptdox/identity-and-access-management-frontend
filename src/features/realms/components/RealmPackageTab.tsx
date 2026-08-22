@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   useGetRealmPackageQuery,
   useGetRealmPackageHistoryQuery,
-  useListPackageDefinitionsQuery,
+  useListAuthenticatedPackageDefinitionsQuery,
   useCreatePackageRequestMutation,
   useApprovePackageRequestMutation,
   useRejectPackageRequestMutation,
@@ -14,6 +14,7 @@ import { getApiErrorMessage } from '@/common/utils/apiError'
 import { confirm } from '@/common/utils/confirm'
 import { formatDate, formatDateTime } from '@/common/utils/formatDate'
 import { Select } from '@/common/components/ui/Select'
+import { Input } from '@/common/components/ui/Input'
 import { Button } from '@/common/components/ui/Button'
 import { Badge } from '@/common/components/ui/Badge'
 import { Skeleton } from '@/common/components/ui/Skeleton'
@@ -24,9 +25,13 @@ function definitionLabel(d: PackageDefinition): string {
   return `${d.tier} (${d.billingCycle}) — ${price}`
 }
 
+function formatAmount(amount: number): string {
+  return amount >= 0 ? `$${amount.toFixed(2)}` : `-$${Math.abs(amount).toFixed(2)}`
+}
+
 // A downgrade that would exceed the new plan's user limit comes back as a 409
 // carrying { requiresConfirmation, ... } in ApiError.data instead of applying —
-// see realmPackage.service.ts's applyPackageChangeOrConfirm on the backend.
+// see realmPackage.service.ts's applyToRealm on the backend.
 function asDowngradeConfirmation(err: unknown): DowngradeConfirmationRequired | null {
   if (err && typeof err === 'object' && 'data' in err) {
     const data = (err as { data?: unknown }).data
@@ -42,7 +47,7 @@ export function RealmPackageTab({ realmId }: { realmId: string }) {
   const toast = useToast()
 
   const { data: pkgData, isLoading: isPkgLoading } = useGetRealmPackageQuery(realmId)
-  const { data: definitionsData } = useListPackageDefinitionsQuery()
+  const { data: definitionsData } = useListAuthenticatedPackageDefinitionsQuery()
   const { data: historyData } = useGetRealmPackageHistoryQuery(realmId, { skip: !isMasterRealmUser })
 
   const [createRequest, { isLoading: isRequesting }] = useCreatePackageRequestMutation()
@@ -51,11 +56,32 @@ export function RealmPackageTab({ realmId }: { realmId: string }) {
   const [assignPackage, { isLoading: isAssigning }] = useAssignRealmPackageMutation()
 
   const [selectedDefinitionId, setSelectedDefinitionId] = useState('')
+  const [requestCount, setRequestCount] = useState('1')
   const [customDefinitionId, setCustomDefinitionId] = useState('')
+  const [assignCount, setAssignCount] = useState('1')
 
   const pkg = pkgData?.data
-  const definitions = definitionsData?.data ?? []
+  const definitions = definitionsData?.data?.items ?? []
   const history = historyData?.data ?? []
+
+  // Both pickers default to whichever catalog row matches the realm's
+  // current plan (tier + billingCycle) once it's loaded, so "Choose a plan"
+  // never starts on an arbitrary/empty selection — a no-op change would just
+  // be a renewal request/assign, not an error. Only sets it once (skipped
+  // once the user has picked anything, including re-picking the same value).
+  useEffect(() => {
+    if (!pkg?.currentPackage || definitions.length === 0) return
+    // TRIAL is never a pickable option (see assignableDefinitions below) —
+    // a realm still on its trial has nothing sensible to default to, so it's
+    // deliberately left on the placeholder in that case.
+    const match = definitions.find(
+      (d) => d.tier !== 'TRIAL' && d.tier === pkg.currentPackage!.tier && d.billingCycle === pkg.currentPackage!.billingCycle,
+    )
+    if (!match) return
+    setSelectedDefinitionId((prev) => prev || match.packageDefinitionId)
+    setCustomDefinitionId((prev) => prev || match.packageDefinitionId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pkg?.currentPackage?.tier, pkg?.currentPackage?.billingCycle, definitions])
 
   async function confirmDowngrade(confirmation: DowngradeConfirmationRequired): Promise<boolean> {
     return confirm({
@@ -69,9 +95,11 @@ export function RealmPackageTab({ realmId }: { realmId: string }) {
   async function handleRequestChange() {
     if (!selectedDefinitionId) return
     try {
-      await createRequest({ realmId, body: { packageDefinitionId: selectedDefinitionId } }).unwrap()
+      const count = Math.max(1, Number(requestCount) || 1)
+      await createRequest({ realmId, body: { packageDefinitionId: selectedDefinitionId, count } }).unwrap()
       toast.success('Plan change request submitted')
       setSelectedDefinitionId('')
+      setRequestCount('1')
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Failed to submit request'))
     }
@@ -105,9 +133,11 @@ export function RealmPackageTab({ realmId }: { realmId: string }) {
   async function handleCustomAssign(confirmForceDowngrade?: boolean) {
     if (!customDefinitionId) return
     try {
-      await assignPackage({ realmId, body: { packageDefinitionId: customDefinitionId, confirmForceDowngrade } }).unwrap()
+      const count = Math.max(1, Number(assignCount) || 1)
+      await assignPackage({ realmId, body: { packageDefinitionId: customDefinitionId, count, confirmForceDowngrade } }).unwrap()
       toast.success('Package updated')
       setCustomDefinitionId('')
+      setAssignCount('1')
     } catch (err) {
       const confirmation = asDowngradeConfirmation(err)
       if (confirmation) {
@@ -122,10 +152,15 @@ export function RealmPackageTab({ realmId }: { realmId: string }) {
     return <Skeleton className="h-40 w-full max-w-lg" />
   }
 
-  const requestPickerOptions = definitions
-    .filter((d) => d.packageDefinitionId !== pkg.packageDefinition.packageDefinitionId)
-    .map((d) => ({ value: d.packageDefinitionId, label: definitionLabel(d) }))
-  const assignPickerOptions = definitions.map((d) => ({ value: d.packageDefinitionId, label: definitionLabel(d) }))
+  // TRIAL is excluded — it's only ever granted automatically when a realm is
+  // first created (never a request/assign target, and the backend rejects it
+  // either way; see realmPackage.service.ts). Requesting the SAME
+  // non-TRIAL plan is still valid — a renewal, not filtered out — the
+  // backend detects it (isRenewal) and charges the full recurring price
+  // instead of prorating, extending the expiry instead of resetting it.
+  const assignableDefinitions = definitions.filter((d) => d.tier !== 'TRIAL')
+  const requestPickerOptions = assignableDefinitions.map((d) => ({ value: d.packageDefinitionId, label: definitionLabel(d) }))
+  const assignPickerOptions = assignableDefinitions.map((d) => ({ value: d.packageDefinitionId, label: definitionLabel(d) }))
 
   return (
     <div className="flex max-w-lg flex-col gap-6">
@@ -134,31 +169,54 @@ export function RealmPackageTab({ realmId }: { realmId: string }) {
         <div className="mt-2 grid grid-cols-[140px_1fr] gap-y-1.5 text-sm">
           <span className="text-text-secondary">Tier</span>
           <span className="text-text">
-            {pkg.packageDefinition.tier} ({pkg.packageDefinition.billingCycle})
+            {pkg.currentPackage ? `${pkg.currentPackage.tier} (${pkg.currentPackage.billingCycle})` : '—'}
           </span>
           <span className="text-text-secondary">User limit</span>
-          <span className="text-text">{pkg.packageDefinition.userLimit ?? 'Unlimited'}</span>
+          <span className="text-text">{pkg.currentPackage?.userLimit ?? 'Unlimited'}</span>
           <span className="text-text-secondary">Concurrent logins</span>
-          <span className="text-text">{pkg.packageDefinition.concurrentLoginLimit ?? 'Unlimited'}</span>
-          <span className="text-text-secondary">Active until</span>
-          <span className="text-text">{formatDate(pkg.activeTo)}</span>
+          <span className="text-text">{pkg.currentPackage?.concurrentLoginLimit ?? 'Unlimited'}</span>
+          <span className="text-text-secondary">Expires</span>
+          <span className="text-text">{pkg.packageExpiresAt ? formatDate(pkg.packageExpiresAt) : '—'}</span>
+          {pkg.packagePaidAmount != null && (
+            <>
+              <span className="text-text-secondary">Last paid amount</span>
+              <span className="text-text">{formatAmount(pkg.packagePaidAmount)}</span>
+            </>
+          )}
         </div>
       </div>
 
       {pkg.pendingRequest ? (
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-          <p className="text-sm font-medium text-text">Pending plan change request</p>
+          <p className="text-sm font-medium text-text">
+            {pkg.pendingRequest.isRenewal ? 'Pending plan renewal' : 'Pending plan change request'}
+          </p>
           <p className="mt-1 text-sm text-text-secondary">
             Requested: {pkg.pendingRequest.packageDefinition.tier} ({pkg.pendingRequest.packageDefinition.billingCycle})
           </p>
-          {pkg.pendingRequest.calculatedPrice != null && (
-            <p className="mt-1 text-sm text-text-secondary">
-              {pkg.pendingRequest.calculatedPrice >= 0
-                ? `Due now: $${pkg.pendingRequest.calculatedPrice.toFixed(2)}`
-                : `Credit: $${Math.abs(pkg.pendingRequest.calculatedPrice).toFixed(2)}`}
-              {pkg.pendingRequest.recurringPrice != null &&
-                ` — then $${pkg.pendingRequest.recurringPrice}/${pkg.pendingRequest.packageDefinition.billingCycle === 'YEARLY' ? 'yr' : 'mo'}`}
-            </p>
+          {pkg.pendingRequest.recurringPrice != null && (
+            <div className="mt-2 grid grid-cols-[140px_1fr] gap-y-1 text-sm">
+              <span className="text-text-secondary">Original price</span>
+              <span className="text-text">
+                {formatAmount(pkg.pendingRequest.recurringPrice)}/{pkg.pendingRequest.packageDefinition.billingCycle === 'YEARLY' ? 'yr' : 'mo'}
+              </span>
+              <span className="text-text-secondary">Adjusted amount</span>
+              <span className="text-text">
+                {pkg.pendingRequest.calculatedPrice == null
+                  ? 'Contact us'
+                  : pkg.pendingRequest.isRenewal
+                    ? `${formatAmount(pkg.pendingRequest.calculatedPrice)} (renewal, no proration)`
+                    : pkg.pendingRequest.calculatedPrice > 0
+                      ? `${formatAmount(pkg.pendingRequest.calculatedPrice)} due now`
+                      : `$0.00 (no refund — leftover balance added as extra time)`}
+              </span>
+              <span className="text-text-secondary">Cycles requested</span>
+              <span className="text-text">{pkg.pendingRequest.requestedCycleCount}</span>
+              <span className="text-text-secondary">Duration once approved</span>
+              <span className="text-text">
+                {pkg.pendingRequest.resolvedDurationDays == null ? 'Set manually' : `${pkg.pendingRequest.resolvedDurationDays} days`}
+              </span>
+            </div>
           )}
           <div className="mt-2">
             <Badge tone="warning">Pending Master&apos;s review</Badge>
@@ -177,13 +235,21 @@ export function RealmPackageTab({ realmId }: { realmId: string }) {
         </div>
       ) : (
         <div className="rounded-xl border border-border bg-surface-alt/50 p-4">
-          <p className="text-sm font-medium text-text">Request a plan change</p>
+          <p className="text-sm font-medium text-text">Request a plan change or renewal</p>
           <div className="mt-3 flex flex-col gap-3">
             <Select
               value={selectedDefinitionId}
               onChange={(e) => setSelectedDefinitionId(e.target.value)}
               options={requestPickerOptions}
               placeholder="Choose a plan"
+            />
+            <Input
+              label="Cycles"
+              type="number"
+              min={1}
+              value={requestCount}
+              onChange={(e) => setRequestCount(e.target.value)}
+              hint="e.g. 4 on a monthly plan requests 4 months at once"
             />
             <Button
               size="sm"
@@ -209,6 +275,13 @@ export function RealmPackageTab({ realmId }: { realmId: string }) {
                 onChange={(e) => setCustomDefinitionId(e.target.value)}
                 options={assignPickerOptions}
                 placeholder="Choose a plan"
+              />
+              <Input
+                label="Cycles"
+                type="number"
+                min={1}
+                value={assignCount}
+                onChange={(e) => setAssignCount(e.target.value)}
               />
               <Button
                 size="sm"

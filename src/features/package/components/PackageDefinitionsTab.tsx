@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useListPackageModuleDefinitionsQuery, useUpdatePackageDefinitionMutation } from '@/api/endpoints/package.api'
+import { useLazyListPackageModuleDefinitionsQuery, useUpdatePackageDefinitionMutation } from '@/api/endpoints/package.api'
+import { useCursorList } from '@/common/hooks/useCursorList'
 import { DataTable, type DataTableColumn } from '@/common/components/ui/DataTable'
 import { Badge } from '@/common/components/ui/Badge'
 import { Button } from '@/common/components/ui/Button'
@@ -25,9 +26,12 @@ const ACTIVE_OPTIONS = [
 /** The pricing catalog — seeded at bootstrap, but manageable by Master here:
  * create a new tier/cycle combo, edit its limits/price, or deactivate one so
  * it stops being offered publicly without deleting it (existing realms may
- * still be on it). Not paginated (small fixed catalog) — filtering is client-side. */
+ * still be on it). Cursor-paginated, newest-first, like every other Packages
+ * module tab; tier/cycle/active filters apply client-side over the currently
+ * loaded page(s) since the whole catalog is always small. */
 export function PackageDefinitionsTab() {
-  const { data, isFetching } = useListPackageModuleDefinitionsQuery()
+  const [trigger] = useLazyListPackageModuleDefinitionsQuery()
+  const { items, isLoading, isLoadingMore, hasMore, loadMore, reload } = useCursorList(trigger, { limit: 20 })
   const [updateDefinition] = useUpdatePackageDefinitionMutation()
   const toast = useToast()
 
@@ -39,7 +43,6 @@ export function PackageDefinitionsTab() {
   const [editing, setEditing] = useState<PackageDefinition | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
 
-  const items = data?.data ?? []
   const filtered = useMemo(
     () =>
       items.filter((d) => {
@@ -56,6 +59,7 @@ export function PackageDefinitionsTab() {
     try {
       await updateDefinition({ packageDefinitionId: d.packageDefinitionId, body: { isActive: !d.isActive } }).unwrap()
       toast.success(d.isActive ? 'Definition deactivated' : 'Definition activated')
+      void reload()
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Failed to update package definition'))
     } finally {
@@ -137,11 +141,21 @@ export function PackageDefinitionsTab() {
         columns={columns}
         rows={filtered}
         rowKey={(d) => d.packageDefinitionId}
-        loading={isFetching}
+        loading={isLoading}
+        hasMore={hasMore}
+        loadingMore={isLoadingMore}
+        onLoadMore={() => void loadMore()}
         emptyMessage="No package definitions found."
       />
 
-      <PackageDefinitionFormModal open={modalOpen} onClose={() => setModalOpen(false)} editing={editing} />
+      <PackageDefinitionFormModal
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false)
+          void reload()
+        }}
+        editing={editing}
+      />
     </div>
   )
 }

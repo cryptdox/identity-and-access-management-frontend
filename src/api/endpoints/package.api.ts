@@ -4,6 +4,7 @@ import type {
   PackageDefinition,
   CreatePackageDefinitionDto,
   UpdatePackageDefinitionDto,
+  PackageDefinitionLog,
   RealmPackageWithRealm,
   RealmPackageRequestWithRealm,
   RealmPackageLogWithRealm,
@@ -11,12 +12,14 @@ import type {
 } from '@/features/realms/realmPackage.types'
 
 /** The Packages module — Master-only (see masterOnly.middleware.ts on the
- * backend). All four list endpoints are cursor-paginated except definitions
- * (a small fixed catalog, no pagination needed). */
+ * backend). Every list endpoint here is cursor-paginated, newest first. */
 export const packageApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    listPackageModuleDefinitions: builder.query<ApiResponse<PackageDefinition[]>, void>({
-      query: () => ({ url: '/package/definitions', method: 'GET' }),
+    listPackageModuleDefinitions: builder.query<
+      ApiResponse<CursorPage<PackageDefinition>>,
+      { cursor?: string; limit?: number } | void
+    >({
+      query: (params) => ({ url: '/package/definitions', method: 'GET', params: params ?? undefined }),
       providesTags: [{ type: 'Realm', id: 'PACKAGE_DEFINITIONS' }],
     }),
     createPackageDefinition: builder.mutation<ApiResponse<PackageDefinition>, CreatePackageDefinitionDto>({
@@ -30,9 +33,15 @@ export const packageApi = baseApi.injectEndpoints({
       query: ({ packageDefinitionId, body }) => ({ url: `/package/definitions/${packageDefinitionId}`, method: 'PATCH', data: body }),
       invalidatesTags: [{ type: 'Realm', id: 'PACKAGE_DEFINITIONS' }],
     }),
+    listPackageDefinitionLogs: builder.query<
+      ApiResponse<CursorPage<PackageDefinitionLog>>,
+      { cursor?: string; limit?: number } | void
+    >({
+      query: (params) => ({ url: '/package/definition-logs', method: 'GET', params: params ?? undefined }),
+    }),
     listAssignedPackages: builder.query<
       ApiResponse<CursorPage<RealmPackageWithRealm>>,
-      { packageDefinitionId?: string; realmName?: string; cursor?: string; limit?: number } | void
+      { tier?: string; billingCycle?: string; realmName?: string; cursor?: string; limit?: number } | void
     >({
       query: (params) => ({ url: '/package/assigned', method: 'GET', params: params ?? undefined }),
     }),
@@ -62,8 +71,10 @@ export const packageApi = baseApi.injectEndpoints({
 
 export const {
   useListPackageModuleDefinitionsQuery,
+  useLazyListPackageModuleDefinitionsQuery,
   useCreatePackageDefinitionMutation,
   useUpdatePackageDefinitionMutation,
+  useLazyListPackageDefinitionLogsQuery,
   useLazyListAssignedPackagesQuery,
   useLazyListPackageModuleRequestsQuery,
   useLazyListPackageModuleLogsQuery,

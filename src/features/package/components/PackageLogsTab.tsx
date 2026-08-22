@@ -27,6 +27,25 @@ const ACTION_OPTIONS = [
   { value: 'UPDATED', label: 'Updated' },
 ]
 
+function planLabel(snapshot: RealmPackageLogWithRealm['fromSnapshot' | 'toSnapshot']): string {
+  return snapshot ? `${snapshot.tier} (${snapshot.billingCycle})` : '—'
+}
+
+function renderAmount(l: RealmPackageLogWithRealm): string {
+  const meta = l.metadata
+  if (!meta || meta.calculatedPrice == null) return '—'
+  const calculatedPrice = Number(meta.calculatedPrice)
+  const isRenewal = Boolean(meta.isRenewal)
+  if (isRenewal) return `$${calculatedPrice.toFixed(2)} (renewal)`
+  if (calculatedPrice > 0) return `$${calculatedPrice.toFixed(2)} due`
+  return '$0.00 (no refund — extra time granted)'
+}
+
+function renderDeactivated(l: RealmPackageLogWithRealm): string {
+  const ids = l.metadata?.autoDeactivatedUserIds
+  return Array.isArray(ids) && ids.length > 0 ? `${ids.length} user(s) deactivated` : '—'
+}
+
 /** The full package lifecycle feed across every realm — every trial grant,
  * request, approval, rejection, and direct Master change, newest first. */
 export function PackageLogsTab() {
@@ -48,6 +67,20 @@ export function PackageLogsTab() {
   const columns: DataTableColumn<RealmPackageLogWithRealm>[] = [
     { key: 'realmName', header: 'Realm', render: (l) => <span className="font-medium">{l.realmName}</span> },
     { key: 'action', header: 'Action', render: (l) => <Badge tone={ACTION_TONE[l.action]}>{l.action}</Badge> },
+    {
+      key: 'change',
+      header: 'Plan change',
+      render: (l) =>
+        l.fromSnapshot || l.toSnapshot ? (
+          <span className="text-text-secondary">
+            {planLabel(l.fromSnapshot)} <span className="text-text">→</span> {planLabel(l.toSnapshot)}
+          </span>
+        ) : (
+          '—'
+        ),
+    },
+    { key: 'amount', header: 'Amount', render: renderAmount },
+    { key: 'deactivated', header: 'Users affected', render: renderDeactivated },
     { key: 'createdAt', header: 'When', render: (l) => formatDateTime(l.createdAt) },
   ]
 

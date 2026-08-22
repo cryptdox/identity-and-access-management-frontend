@@ -48,7 +48,7 @@ export function PackageRequestsTab() {
   const { data: definitionsData } = useListPackageModuleDefinitionsQuery()
   const definitionOptions = [
     { value: '', label: 'All plans' },
-    ...(definitionsData?.data ?? []).map((d) => ({
+    ...(definitionsData?.data?.items ?? []).map((d) => ({
       value: d.packageDefinitionId,
       label: `${d.tier} (${d.billingCycle})`,
     })),

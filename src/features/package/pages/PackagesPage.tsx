@@ -1,6 +1,7 @@
 import { PageHeader } from '@/common/components/ui/PageHeader'
 import { Tabs } from '@/common/components/ui/Tabs'
 import { PackageDefinitionsTab } from '@/features/package/components/PackageDefinitionsTab'
+import { PackageDefinitionLogsTab } from '@/features/package/components/PackageDefinitionLogsTab'
 import { AssignedPackagesTab } from '@/features/package/components/AssignedPackagesTab'
 import { PackageRequestsTab } from '@/features/package/components/PackageRequestsTab'
 import { PackageLogsTab } from '@/features/package/components/PackageLogsTab'
@@ -16,6 +17,7 @@ export default function PackagesPage() {
       <Tabs
         items={[
           { key: 'definitions', label: 'Definitions', content: <PackageDefinitionsTab /> },
+          { key: 'definition-logs', label: 'Definition logs', content: <PackageDefinitionLogsTab /> },
           { key: 'assigned', label: 'Assigned', content: <AssignedPackagesTab /> },
           { key: 'requests', label: 'Requests', content: <PackageRequestsTab /> },
           { key: 'logs', label: 'Logs', content: <PackageLogsTab /> },
