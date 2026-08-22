@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { DayPicker, type DateRange } from 'react-day-picker'
 import 'react-day-picker/style.css'
 import { Modal } from '@/common/components/ui/Modal'
@@ -38,6 +38,16 @@ export function DateRangeModal({
   const [range, setRange] = useState<DateRange | undefined>(
     initialFrom ? { from: initialFrom, to: initialTo } : undefined,
   )
+
+  // The modal never unmounts between opens (it's always rendered, just hidden), so
+  // `range`'s useState initializer only ever ran once — without this, clicking
+  // around and then closing without Apply left those abandoned clicks in place for
+  // the next time the modal opens, instead of showing the last actually-applied
+  // range.
+  useEffect(() => {
+    if (open) setRange(initialFrom ? { from: initialFrom, to: initialTo } : undefined)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   function handleApply() {
     if (range?.from && range?.to) {

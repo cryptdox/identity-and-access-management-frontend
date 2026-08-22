@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, CalendarRange } from 'lucide-react'
 import { Button } from '@/common/components/ui/Button'
 import { DateRangeModal } from '@/features/dashboard/components/DateRangeModal'
@@ -71,10 +71,20 @@ function resolve(preset: Preset, offset: number, customFrom: Date | null, custom
  * separate control. */
 export function TimeRangePicker({ onChange }: { onChange: (range: DashboardTimeRange) => void }) {
   const [preset, setPreset] = useState<Preset>('1Y')
+  // Whichever preset was active right before switching to Custom — restored if the
+  // user backs out of the calendar without ever applying a range, so "Custom" isn't
+  // left selected with nothing behind it.
+  const [presetBeforeCustom, setPresetBeforeCustom] = useState<Preset>('1Y')
   const [offset, setOffset] = useState(0)
   const [customFrom, setCustomFrom] = useState<Date | null>(null)
   const [customTo, setCustomTo] = useState<Date | null>(null)
   const [calendarOpen, setCalendarOpen] = useState(false)
+  // Mirrors "do we have a valid custom range" but updates synchronously, unlike
+  // customFrom/customTo's setState calls — DateRangeModal calls onApply then onClose
+  // in the same synchronous handler, so handleCalendarClose below would otherwise
+  // read customFrom/customTo before React had applied that just-requested update,
+  // making it look like no range was ever picked on the very apply that set one.
+  const hasCustomRangeRef = useRef(false)
 
   const resolved = useMemo(() => resolve(preset, offset, customFrom, customTo), [preset, offset, customFrom, customTo])
 
@@ -84,9 +94,20 @@ export function TimeRangePicker({ onChange }: { onChange: (range: DashboardTimeR
   }, [resolved.range?.from, resolved.range?.to, resolved.range?.granularity])
 
   function selectPreset(p: Preset) {
+    if (p === 'CUSTOM' && preset !== 'CUSTOM') setPresetBeforeCustom(preset)
     setPreset(p)
     setOffset(0)
     if (p === 'CUSTOM') setCalendarOpen(true)
+  }
+
+  function handleCalendarClose() {
+    setCalendarOpen(false)
+    // Backed out without ever having a valid custom range — fall back to whatever
+    // was selected before Custom was clicked, instead of leaving Custom selected
+    // with no actual range behind it.
+    if (preset === 'CUSTOM' && !hasCustomRangeRef.current) {
+      setPreset(presetBeforeCustom)
+    }
   }
 
   return (
@@ -133,10 +154,11 @@ export function TimeRangePicker({ onChange }: { onChange: (range: DashboardTimeR
 
       <DateRangeModal
         open={calendarOpen}
-        onClose={() => setCalendarOpen(false)}
+        onClose={handleCalendarClose}
         initialFrom={customFrom ?? undefined}
         initialTo={customTo ?? undefined}
         onApply={({ from, to }) => {
+          hasCustomRangeRef.current = true
           setCustomFrom(from)
           setCustomTo(to)
         }}
