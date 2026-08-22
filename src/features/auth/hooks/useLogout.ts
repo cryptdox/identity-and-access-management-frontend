@@ -17,11 +17,17 @@ export function useLogout() {
     } catch {
       // best-effort: still clear local session even if the server call fails
     }
+    // Navigate away from the current (possibly guarded) route BEFORE clearing auth
+    // state — dispatching loggedOut() first leaves ProtectedRoute briefly mounted at
+    // the old URL with the new "unauthenticated" status, so it fires its own
+    // <Navigate to="/login" state={{ from: oldLocation }}> which then overwrites this
+    // clean navigation on a later render, stamping a stale `from` onto /login that
+    // the next person to log in (possibly a different user) gets redirected back to.
+    navigate('/login', { replace: true })
     tokenManager.clear()
     setRememberDevice(false)
     dispatch(authActions.loggedOut())
     dispatch(baseApi.util.resetApiState())
-    navigate('/login', { replace: true })
   }
 
   return { logout, isLoading }

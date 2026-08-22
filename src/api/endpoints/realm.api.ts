@@ -52,6 +52,12 @@ export const realmApi = baseApi.injectEndpoints({
         { type: 'Realm', id: realmId },
       ],
     }),
+    resetRealmRateLimiters: builder.mutation<ApiResponse<{ keysCleared: number }>, string>({
+      query: (realmId) => ({ url: `/realm/${realmId}/rate-limit/reset`, method: 'POST' }),
+    }),
+    resetAllRateLimiters: builder.mutation<ApiResponse<{ keysCleared: number }>, void>({
+      query: () => ({ url: '/realm/rate-limit/reset-all', method: 'POST' }),
+    }),
   }),
 })
 
@@ -64,4 +70,6 @@ export const {
   useGetRealmSettingsQuery,
   useGetRealmSettingKeysQuery,
   useUpdateRealmSettingsMutation,
+  useResetRealmRateLimitersMutation,
+  useResetAllRateLimitersMutation,
 } = realmApi

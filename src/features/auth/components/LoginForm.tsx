@@ -40,7 +40,17 @@ export function LoginForm() {
         // master users: a fresh login should always land in the user's OWN default
         // realm, never wherever they happened to be browsing before signing out.
         const realmMatch = from.match(/^\/r\/([^/]+)\//)
-        const safeToReturn = !realmMatch || realmMatch[1] === user?.realmId
+        // Master-only top-level pages (routes.config.tsx: /realms, /realms/new — no
+        // /r/:realmId prefix, so realmMatch above never catches these) must never be
+        // trusted for a non-Master account either, for the same reason: the browser
+        // could've been left on /realms by a Master admin, then a tenant admin signs
+        // in on the same machine and would otherwise get bounced there and rejected.
+        const isMasterOnlyPath = from === '/realms' || from.startsWith('/realms/')
+        const safeToReturn = realmMatch
+          ? realmMatch[1] === user?.realmId
+          : isMasterOnlyPath
+            ? Boolean(user?.isMasterRealmUser)
+            : true
         const defaultDestination = user?.realmId ? `/r/${user.realmId}/dashboard` : '/'
         navigate(safeToReturn ? from : defaultDestination, { replace: true })
       } catch (err) {

@@ -1,8 +1,9 @@
 import {
   useCreateRealmMutation,
   useUpdateRealmMutation,
-  useDeleteRealmMutation,
   useUpdateRealmSettingsMutation,
+  useResetRealmRateLimitersMutation,
+  useResetAllRateLimitersMutation,
 } from '@/api/endpoints/realm.api'
 import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
@@ -15,8 +16,9 @@ export function useRealmMutations() {
   const toast = useToast()
   const [createRealmMutation, createState] = useCreateRealmMutation()
   const [updateRealmMutation, updateState] = useUpdateRealmMutation()
-  const [deleteRealmMutation, deleteState] = useDeleteRealmMutation()
   const [updateSettingsMutation, updateSettingsState] = useUpdateRealmSettingsMutation()
+  const [resetRateLimitersMutation, resetRateLimitersState] = useResetRealmRateLimitersMutation()
+  const [resetAllRateLimitersMutation, resetAllRateLimitersState] = useResetAllRateLimitersMutation()
 
   const createRealm = async (body: CreateRealmDto) => {
     try {
@@ -40,16 +42,6 @@ export function useRealmMutations() {
     }
   }
 
-  const deleteRealm = async (realmId: string) => {
-    try {
-      await deleteRealmMutation(realmId).unwrap()
-      toast.success('Realm deleted')
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to delete realm'))
-      throw err
-    }
-  }
-
   const updateRealmSettings = async (realmId: string, body: Record<string, unknown>) => {
     try {
       const result = await updateSettingsMutation({ realmId, body }).unwrap()
@@ -61,14 +53,38 @@ export function useRealmMutations() {
     }
   }
 
+  const resetRateLimiters = async (realmId: string) => {
+    try {
+      const result = await resetRateLimitersMutation(realmId).unwrap()
+      toast.success(`Rate limiters reset (${result.data?.keysCleared ?? 0} counters cleared)`)
+      return result.data
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to reset rate limiters'))
+      throw err
+    }
+  }
+
+  const resetAllRateLimiters = async () => {
+    try {
+      const result = await resetAllRateLimitersMutation().unwrap()
+      toast.success(`All rate limiters reset (${result.data?.keysCleared ?? 0} counters cleared)`)
+      return result.data
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to reset all rate limiters'))
+      throw err
+    }
+  }
+
   return {
     createRealm,
     updateRealm,
-    deleteRealm,
     updateRealmSettings,
+    resetRateLimiters,
+    resetAllRateLimiters,
     isCreating: createState.isLoading,
     isUpdating: updateState.isLoading,
-    isDeleting: deleteState.isLoading,
     isUpdatingSettings: updateSettingsState.isLoading,
+    isResettingRateLimiters: resetRateLimitersState.isLoading,
+    isResettingAllRateLimiters: resetAllRateLimitersState.isLoading,
   }
 }

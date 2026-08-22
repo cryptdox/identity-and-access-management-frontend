@@ -5,20 +5,59 @@ import { Plus } from 'lucide-react'
 import { useListRealmsQuery } from '@/api/endpoints/realm.api'
 import { usePagination } from '@/common/hooks/usePagination'
 import { useDebounce } from '@/common/hooks/useDebounce'
+import { useRealmMutations } from '@/features/realms/hooks/useRealmMutations'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { PageHeader } from '@/common/components/ui/PageHeader'
 import { DataTable, type DataTableColumn } from '@/common/components/ui/DataTable'
 import { Badge } from '@/common/components/ui/Badge'
 import { Button } from '@/common/components/ui/Button'
+import { confirm } from '@/common/utils/confirm'
 import { formatDate } from '@/common/utils/formatDate'
 import type { Realm } from '@/features/realms/realm.types'
 
 export default function RealmListPage() {
   const { t } = useTranslation('realms')
   const navigate = useNavigate()
+  const { user, isMasterRealmUser } = useCurrentUser()
+  const { updateRealm, resetAllRateLimiters, isResettingAllRateLimiters } = useRealmMutations()
   const { params, page, setPage, setSearch, state } = usePagination()
   const [searchInput, setSearchInput] = useState('')
   const debouncedSearch = useDebounce(searchInput, 300)
   const { data, isFetching } = useListRealmsQuery(params)
+  // Which row's enable/disable toggle is in flight — tracked locally (not just
+  // useRealmMutations().isUpdating) so only that one row's button shows loading,
+  // not every button in the table at once.
+  const [pendingRealmId, setPendingRealmId] = useState<string | null>(null)
+
+  async function handleResetAllRateLimiters() {
+    const confirmed = await confirm({
+      title: 'Reset all rate limiters',
+      message:
+        "Clears login/register/email/reset-password rate-limit counters for EVERY realm, not just one. Anyone currently blocked anywhere can retry immediately — only use this for a genuine platform-wide issue.",
+      confirmLabel: 'Reset all rate limiters',
+      danger: true,
+    })
+    if (!confirmed) return
+    await resetAllRateLimiters()
+  }
+
+  async function handleToggleEnabled(realm: Realm) {
+    if (realm.enabled) {
+      const confirmed = await confirm({
+        title: 'Disable realm',
+        message: `Disabling "${realm.name}" stops logins, registration, and API access for it immediately. Nothing is deleted — re-enable it any time to restore access.`,
+        confirmLabel: 'Disable realm',
+        danger: true,
+      })
+      if (!confirmed) return
+    }
+    setPendingRealmId(realm.realmId)
+    try {
+      await updateRealm(realm.realmId, { enabled: !realm.enabled })
+    } finally {
+      setPendingRealmId(null)
+    }
+  }
 
   useEffect(() => {
     setSearch(debouncedSearch)
@@ -35,6 +74,26 @@ export default function RealmListPage() {
       render: (r) => <Badge tone={r.enabled ? 'success' : 'neutral'}>{r.enabled ? 'Enabled' : 'Disabled'}</Badge>,
     },
     { key: 'createdAt', header: 'Created', render: (r) => formatDate(r.createdAt) },
+    {
+      key: 'actions',
+      header: '',
+      // Master's own realm never gets this button — disabling it would lock
+      // every admin, including Master's own, out of the whole console.
+      render: (r) =>
+        isMasterRealmUser && r.realmId !== user?.realmId ? (
+          <Button
+            size="sm"
+            variant="outline"
+            loading={pendingRealmId === r.realmId}
+            onClick={(e) => {
+              e.stopPropagation()
+              void handleToggleEnabled(r)
+            }}
+          >
+            {r.enabled ? 'Disable' : 'Enable'}
+          </Button>
+        ) : null,
+    },
   ]
 
   return (
@@ -43,9 +102,16 @@ export default function RealmListPage() {
         title={t('list.title')}
         description={t('list.description')}
         actions={
-          <Button size="sm" onClick={() => navigate('/realms/new')}>
-            <Plus className="size-4" /> {t('new')}
-          </Button>
+          <div className="flex items-center gap-2">
+            {isMasterRealmUser && (
+              <Button size="sm" variant="outline" loading={isResettingAllRateLimiters} onClick={() => void handleResetAllRateLimiters()}>
+                Reset all rate limiters
+              </Button>
+            )}
+            <Button size="sm" onClick={() => navigate('/realms/new')}>
+              <Plus className="size-4" /> {t('new')}
+            </Button>
+          </div>
         }
       />
 

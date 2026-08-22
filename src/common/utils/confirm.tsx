@@ -9,6 +9,11 @@ export interface ConfirmOptions {
   confirmLabel?: string
   cancelLabel?: string
   danger?: boolean
+  // When set, Confirm stays disabled until the user types this exact text —
+  // the "type the resource's name to confirm" pattern for the most destructive
+  // actions (deleting/disabling a realm, etc.), on top of the plain click-through
+  // every other confirm() call in the app already uses.
+  confirmationText?: string
 }
 
 function ConfirmDialog({
@@ -19,6 +24,9 @@ function ConfirmDialog({
   onResolve: (value: boolean) => void
 }) {
   const [open, setOpen] = useState(true)
+  const [typed, setTyped] = useState('')
+  const requiresTyping = options.confirmationText !== undefined
+  const canConfirm = !requiresTyping || typed === options.confirmationText
 
   function resolve(value: boolean) {
     setOpen(false)
@@ -29,11 +37,25 @@ function ConfirmDialog({
   return (
     <Modal open={open} onClose={() => resolve(false)} title={options.title} size="sm">
       <p className="text-sm text-text-secondary">{options.message}</p>
+      {requiresTyping && (
+        <div className="mt-4">
+          <label className="text-sm text-text-secondary">
+            Type <span className="font-mono font-medium text-text">{options.confirmationText}</span> to confirm
+          </label>
+          <input
+            type="text"
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            autoFocus
+            className="mt-1.5 h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-text focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+      )}
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="ghost" size="sm" onClick={() => resolve(false)}>
           {options.cancelLabel ?? 'Cancel'}
         </Button>
-        <Button variant={options.danger ? 'danger' : 'primary'} size="sm" onClick={() => resolve(true)}>
+        <Button variant={options.danger ? 'danger' : 'primary'} size="sm" disabled={!canConfirm} onClick={() => resolve(true)}>
           {options.confirmLabel ?? 'Confirm'}
         </Button>
       </div>
