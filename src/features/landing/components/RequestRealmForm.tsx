@@ -18,6 +18,7 @@ export function RequestRealmForm() {
   const toast = useToast()
   const [captchaToken, setCaptchaToken] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [resultMessage, setResultMessage] = useState('')
 
   const formik = useFormik<RequestRealmFormValues>({
     initialValues: { realmName: '', adminUsername: '', adminEmail: '', adminPassword: '' },
@@ -29,7 +30,15 @@ export function RequestRealmForm() {
         return
       }
       try {
-        await requestRealm({ ...values, captchaToken }).unwrap()
+        // Backend may have registered the realm under a slightly different
+        // name if what was typed was already taken (or already pending
+        // someone else's review) — it auto-suffixes rather than rejecting,
+        // and the response message says so when that happened.
+        const result = await requestRealm({ ...values, captchaToken }).unwrap()
+        setResultMessage(
+          result.data?.message ??
+            "An administrator will review your request and activate your organization shortly. You'll be able to sign in once it's approved.",
+        )
         setSubmitted(true)
         resetForm()
       } catch (err) {
@@ -45,10 +54,7 @@ export function RequestRealmForm() {
       <div className="flex flex-col items-center gap-3 py-4 text-center">
         <CheckCircle2 className="size-10 text-success" />
         <p className="text-lg font-semibold text-text">Request received</p>
-        <p className="max-w-sm text-sm text-text-secondary">
-          An administrator will review your request and activate your organization shortly. You&apos;ll be able to sign in
-          once it&apos;s approved.
-        </p>
+        <p className="max-w-sm text-sm text-text-secondary">{resultMessage}</p>
       </div>
     )
   }

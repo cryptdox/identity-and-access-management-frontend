@@ -7,4 +7,12 @@ export const requestRealmSchema = yup.object({
   adminPassword: yup.string().min(8, 'At least 8 characters').required('Password is required'),
 })
 
-export type RequestRealmFormValues = yup.InferType<typeof requestRealmSchema>
+// Not yup.InferType — .required() there only guarantees the field at runtime,
+// not in the static type (a known yup gotcha), which left these all-optional
+// and broke spreading `values` straight into RequestRealmDto's required fields.
+export interface RequestRealmFormValues {
+  realmName: string
+  adminUsername: string
+  adminEmail: string
+  adminPassword: string
+}

@@ -110,7 +110,7 @@ export const realmApi = baseApi.injectEndpoints({
       query: () => ({ url: '/realm/package-definitions', method: 'GET' }),
     }),
     // Public — creates a disabled realm + disabled admin user, pending Master's review.
-    requestRealm: builder.mutation<ApiResponse<{ message: string }>, RequestRealmDto>({
+    requestRealm: builder.mutation<ApiResponse<{ realmName: string; message: string }>, RequestRealmDto>({
       query: (body) => ({ url: '/realm-requests', method: 'POST', data: body }),
     }),
 
