@@ -47,12 +47,12 @@ export function Sidebar() {
     ? [
         { to: `/r/${realmId}/dashboard`, label: t('nav.dashboard'), icon: LayoutDashboard, show: true },
         { to: `/r/${realmId}/users`, label: t('nav.users'), icon: Users, show: can(ResourceName.USER, TypeAction.READ_ALL) },
-        { to: `/r/${realmId}/groups`, label: t('nav.groups'), icon: FolderTree, show: can(ResourceName.GROUP, TypeAction.READ_ALL) },
-        { to: `/r/${realmId}/roles`, label: t('nav.roles'), icon: ShieldCheck, show: can(ResourceName.ROLE, TypeAction.READ_ALL) },
+        { to: `/r/${realmId}/groups`, label: t('nav.groups'), icon: FolderTree, show: can(ResourceName.GROUP, TypeAction.READ_ALL) || can(ResourceName.GROUP, TypeAction.READ) },
+        { to: `/r/${realmId}/roles`, label: t('nav.roles'), icon: ShieldCheck, show: can(ResourceName.ROLE, TypeAction.READ_ALL) || can(ResourceName.ROLE, TypeAction.READ) },
         { to: `/r/${realmId}/clients`, label: t('nav.clients'), icon: AppWindow, show: can(ResourceName.CLIENT, TypeAction.READ_ALL) },
-        { to: `/r/${realmId}/sessions`, label: t('nav.sessions'), icon: Activity, show: can(ResourceName.SESSION, TypeAction.READ_ALL) },
-        { to: `/r/${realmId}/refresh-tokens`, label: t('nav.tokens'), icon: KeyRound, show: can(ResourceName.REFRESH_TOKEN, TypeAction.READ_ALL) },
-        { to: `/r/${realmId}/events`, label: t('nav.events'), icon: ScrollText, show: can(ResourceName.EVENT, TypeAction.READ_ALL) },
+        { to: `/r/${realmId}/sessions`, label: t('nav.sessions'), icon: Activity, show: can(ResourceName.SESSION, TypeAction.READ_ALL) || can(ResourceName.SESSION, TypeAction.READ) },
+        { to: `/r/${realmId}/refresh-tokens`, label: t('nav.tokens'), icon: KeyRound, show: can(ResourceName.REFRESH_TOKEN, TypeAction.READ_ALL) || can(ResourceName.REFRESH_TOKEN, TypeAction.READ) },
+        { to: `/r/${realmId}/events`, label: t('nav.events'), icon: ScrollText, show: can(ResourceName.EVENT, TypeAction.READ_ALL) || can(ResourceName.EVENT, TypeAction.READ) },
         { to: `/r/${realmId}/settings`, label: t('nav.settings'), icon: Settings, show: can(ResourceName.REALM, TypeAction.UPDATE) },
       ].filter((item) => item.show)
     : []

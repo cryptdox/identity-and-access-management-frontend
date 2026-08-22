@@ -13,6 +13,7 @@ import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
 import { formatDateTime, formatRelativeTime } from '@/common/utils/formatDate'
 import { useCan } from '@/common/hooks/usePermission'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import { UserIdentity } from '@/common/components/ui/UserIdentity'
 import type { UserSession } from '@/features/users/user.types'
@@ -20,7 +21,14 @@ import type { UserSession } from '@/features/users/user.types'
 export default function SessionsPage() {
   const { t } = useTranslation('sessions')
   const realmId = useRealmId()
-  const canRevoke = useCan(ResourceName.SESSION, TypeAction.UPDATE)
+  const { user } = useCurrentUser()
+  // Plain UPDATE only revokes the caller's OWN session (backend enforces this too —
+  // it's not just a UI nicety) — UPDATE_ALL is required to revoke anyone else's.
+  const canUpdate = useCan(ResourceName.SESSION, TypeAction.UPDATE)
+  const canUpdateAll = useCan(ResourceName.SESSION, TypeAction.UPDATE_ALL)
+  // Without SESSION:READ_ALL, the backend force-scopes this list to the caller's
+  // own sessions — adjust the framing to match rather than implying it's realm-wide.
+  const canReadAll = useCan(ResourceName.SESSION, TypeAction.READ_ALL)
   const { params, page, setPage, state } = usePagination({ sortBy: 'lastAccess', sortOrder: 'desc' })
   const [revokedFilter, setRevokedFilter] = useState('')
   const { data, isFetching } = useListUserSessionsQuery({
@@ -64,17 +72,19 @@ export default function SessionsPage() {
       header: 'Status',
       render: (s) => <Badge tone={s.revoked ? 'neutral' : 'success'}>{s.revoked ? t('status.revoked') : t('status.active')}</Badge>,
     },
-    ...(canRevoke
+    ...(canUpdate || canUpdateAll
       ? [
           {
             key: 'actions',
             header: '',
-            render: (s: UserSession) =>
-              !s.revoked && (
+            render: (s: UserSession) => {
+              const canRevokeThis = canUpdateAll || (canUpdate && s.userId === user?.userId)
+              return !s.revoked && canRevokeThis && (
                 <Button size="sm" variant="outline" loading={isRevoking} onClick={() => void handleRevoke(s.userSessionId)}>
                   {t('revoke')}
                 </Button>
-              ),
+              )
+            },
           },
         ]
       : []),
@@ -82,7 +92,7 @@ export default function SessionsPage() {
 
   return (
     <div>
-      <PageHeader title={t('title')} description={t('description')} />
+      <PageHeader title={canReadAll ? t('title') : 'My sessions'} description={canReadAll ? t('description') : 'Active and past sessions for your own account.'} />
 
       <div className="mb-4 max-w-xs">
         <Select options={statusOptions} value={revokedFilter} onChange={(e) => setRevokedFilter(e.target.value)} />

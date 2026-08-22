@@ -12,6 +12,7 @@ import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
 import { formatDateTime } from '@/common/utils/formatDate'
 import { useCan } from '@/common/hooks/usePermission'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import { UserIdentity } from '@/common/components/ui/UserIdentity'
 import { ClientIdentity } from '@/common/components/ui/ClientIdentity'
@@ -19,7 +20,15 @@ import type { RefreshToken } from '@/features/tokens/token.types'
 
 export default function RefreshTokensPage() {
   const { t } = useTranslation('tokens')
-  const canRevoke = useCan(ResourceName.REFRESH_TOKEN, TypeAction.UPDATE)
+  const { user } = useCurrentUser()
+  // Plain UPDATE only revokes the caller's OWN token (backend enforces this too —
+  // it's not just a UI nicety) — UPDATE_ALL is required to revoke anyone else's.
+  const canUpdate = useCan(ResourceName.REFRESH_TOKEN, TypeAction.UPDATE)
+  const canUpdateAll = useCan(ResourceName.REFRESH_TOKEN, TypeAction.UPDATE_ALL)
+  // Without REFRESH_TOKEN:READ_ALL, the backend force-scopes this list to the
+  // caller's own tokens regardless of the userId filter below — hide that filter
+  // in that case since it'd be a dead control, not a real admin search.
+  const canReadAll = useCan(ResourceName.REFRESH_TOKEN, TypeAction.READ_ALL)
   const { params, page, setPage, state } = usePagination()
   const [userId, setUserId] = useState('')
   const { data, isFetching } = useListRefreshTokensQuery({ ...params, userId: userId || undefined })
@@ -47,17 +56,19 @@ export default function RefreshTokensPage() {
       header: 'Status',
       render: (token) => <Badge tone={token.revoked ? 'neutral' : 'success'}>{token.revoked ? 'Revoked' : 'Active'}</Badge>,
     },
-    ...(canRevoke
+    ...(canUpdate || canUpdateAll
       ? [
           {
             key: 'actions',
             header: '',
-            render: (token: RefreshToken) =>
-              !token.revoked && (
+            render: (token: RefreshToken) => {
+              const canRevokeThis = canUpdateAll || (canUpdate && token.userId === user?.userId)
+              return !token.revoked && canRevokeThis && (
                 <Button size="sm" variant="outline" loading={isRevoking} onClick={() => void handleRevoke(token.refreshTokenId)}>
                   {t('revoke')}
                 </Button>
-              ),
+              )
+            },
           },
         ]
       : []),
@@ -65,11 +76,13 @@ export default function RefreshTokensPage() {
 
   return (
     <div>
-      <PageHeader title={t('title')} description={t('description')} />
+      <PageHeader title={canReadAll ? t('title') : 'My refresh tokens'} description={canReadAll ? t('description') : 'Refresh tokens issued to your own account.'} />
 
-      <div className="mb-4 max-w-xs">
-        <Input placeholder={t('filterByUser')} value={userId} onChange={(e) => setUserId(e.target.value)} />
-      </div>
+      {canReadAll && (
+        <div className="mb-4 max-w-xs">
+          <Input placeholder={t('filterByUser')} value={userId} onChange={(e) => setUserId(e.target.value)} />
+        </div>
+      )}
 
       <DataTable<RefreshToken>
         columns={columns}

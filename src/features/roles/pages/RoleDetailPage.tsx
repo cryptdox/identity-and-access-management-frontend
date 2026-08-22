@@ -10,6 +10,12 @@ import { RoleGeneralTab } from '@/features/roles/components/RoleGeneralTab'
 import { CompositeRoleEditor } from '@/features/roles/components/CompositeRoleEditor'
 import { RolePermissionPanel } from '@/features/roles/components/RolePermissionPanel'
 import { RoleUsersTab } from '@/features/roles/components/RoleUsersTab'
+import { RoleDashboardViewsTab } from '@/features/dashboard/components/RoleDashboardViewsTab'
+
+/** Dashboard views only exist for the admin console's own client (see
+ * ClientDetailPage.tsx) — a role belonging to any other client has an empty catalog
+ * by design, so there's nothing to show here for it. */
+const IAM_CLIENT_ID = (import.meta.env.VITE_IAM_CLIENT_ID as string | undefined) ?? ''
 
 export default function RoleDetailPage() {
   const { t } = useTranslation('roles')
@@ -52,6 +58,9 @@ export default function RoleDetailPage() {
           },
           { key: 'permissions', label: t('tabs.permissions'), content: <RolePermissionPanel role={role} /> },
           { key: 'users', label: t('tabs.users'), content: <RoleUsersTab roleId={role.roleId} /> },
+          ...(role.client?.clientId === IAM_CLIENT_ID
+            ? [{ key: 'dashboard-views', label: 'Dashboard', content: <RoleDashboardViewsTab role={role} /> }]
+            : []),
         ]}
       />
     </div>

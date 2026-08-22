@@ -4,7 +4,10 @@ import type { UserRole } from '@/features/users/user-role.types'
 
 export const userRoleApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    listUserRoles: builder.query<ApiResponse<PaginatedData<UserRole>>, { userId?: string; roleId?: string; limit?: number }>({
+    listUserRoles: builder.query<
+      ApiResponse<PaginatedData<UserRole>>,
+      { userId?: string; roleId?: string; realmId?: string; limit?: number }
+    >({
       query: (params) => ({ url: '/user-role', method: 'GET', params }),
       providesTags: (_result, _error, { userId, roleId }) => [{ type: 'UserRole', id: userId ?? roleId ?? 'LIST' }],
     }),

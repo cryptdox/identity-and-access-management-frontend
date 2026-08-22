@@ -26,6 +26,9 @@ export default function RoleListPage() {
   const realmId = useRealmId()
   const navigate = useNavigate()
   const canCreate = useCan(ResourceName.ROLE, TypeAction.CREATE)
+  // Without ROLE:READ_ALL, the backend force-scopes this list to roles the caller
+  // effectively holds themselves (direct + via group + composite).
+  const canReadAll = useCan(ResourceName.ROLE, TypeAction.READ_ALL)
   const { params, page, setPage, setSearch, state } = usePagination()
   const [searchInput, setSearchInput] = useState('')
   const debouncedSearch = useDebounce(searchInput, 300)
@@ -76,8 +79,8 @@ export default function RoleListPage() {
   return (
     <div>
       <PageHeader
-        title={t('list.title')}
-        description={t('list.description')}
+        title={canReadAll ? t('list.title') : 'My roles'}
+        description={canReadAll ? t('list.description') : 'Roles you hold for the selected client.'}
         actions={
           canCreate && (
             <Button size="sm" onClick={() => navigate(`/r/${realmId}/roles/new`)}>

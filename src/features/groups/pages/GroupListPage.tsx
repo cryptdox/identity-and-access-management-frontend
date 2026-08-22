@@ -16,14 +16,17 @@ export default function GroupListPage() {
   const realmId = useRealmId()
   const navigate = useNavigate()
   const canCreate = useCan(ResourceName.GROUP, TypeAction.CREATE)
+  // Without GROUP:READ_ALL, the backend force-scopes this list to groups the
+  // caller is themselves a member of.
+  const canReadAll = useCan(ResourceName.GROUP, TypeAction.READ_ALL)
   const { data, isLoading } = useListGroupsQuery({ realmId, limit: 200 })
   const groups = data?.data?.items ?? []
 
   return (
     <div>
       <PageHeader
-        title={t('list.title')}
-        description={t('list.description')}
+        title={canReadAll ? t('list.title') : 'My groups'}
+        description={canReadAll ? t('list.description') : 'Groups you are a member of.'}
         actions={
           canCreate && (
             <Button size="sm" onClick={() => navigate(`/r/${realmId}/groups/new`)}>

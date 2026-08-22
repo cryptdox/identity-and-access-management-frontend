@@ -9,6 +9,8 @@ import { Badge } from '@/common/components/ui/Badge'
 import { EventFilterBar } from '@/features/events/components/EventFilterBar'
 import { formatDateTime } from '@/common/utils/formatDate'
 import { UserIdentity } from '@/common/components/ui/UserIdentity'
+import { useCan } from '@/common/hooks/usePermission'
+import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import type { TypeEvent } from '@/api/types/enums.types'
 import type { Event } from '@/features/events/event.types'
 
@@ -29,6 +31,9 @@ export default function EventsPage() {
   const { t } = useTranslation('events')
   const realmId = useRealmId()
   const { page, setPage, state } = usePagination({ sortBy: 'createdAt', sortOrder: 'desc' })
+  // Without EVENT:READ_ALL, the backend force-scopes this list to the caller's own
+  // events — adjust the framing and hide the now-dead userId filter to match.
+  const canReadAll = useCan(ResourceName.EVENT, TypeAction.READ_ALL)
   const [type, setType] = useState('')
   const [userId, setUserId] = useState('')
 
@@ -55,8 +60,8 @@ export default function EventsPage() {
 
   return (
     <div>
-      <PageHeader title={t('title')} description={t('description')} />
-      <EventFilterBar type={type} onTypeChange={setType} userId={userId} onUserIdChange={setUserId} />
+      <PageHeader title={canReadAll ? t('title') : 'My activity'} description={canReadAll ? t('description') : 'Events recorded for your own account.'} />
+      <EventFilterBar type={type} onTypeChange={setType} userId={userId} onUserIdChange={setUserId} hideUserFilter={!canReadAll} />
 
       <DataTable<Event>
         columns={columns}

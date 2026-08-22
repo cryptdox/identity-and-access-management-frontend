@@ -19,6 +19,7 @@ export const apiTagTypes = [
   'Permission',
   'Event',
   'Me',
+  'Dashboard',
 ] as const
 
 export const baseApi = createApi({

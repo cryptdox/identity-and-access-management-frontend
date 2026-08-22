@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
 import { AppShell } from '@/common/components/layout/AppShell'
 import { RealmLayout } from '@/common/components/layout/RealmLayout'
-import { withPermission } from '@/common/hocs/withPermission'
+import { withPermission, withPermissionOrSelfService } from '@/common/hocs/withPermission'
 import { withMasterRealmUser } from '@/common/hocs/withMasterRealmUser'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import LoginPage from '@/features/auth/pages/LoginPage'
@@ -42,19 +42,19 @@ const GuardedRealmSettings = withPermission(RealmSettingsPage, ResourceName.REAL
 const GuardedUserList = withPermission(UserListPage, ResourceName.USER, TypeAction.READ_ALL)
 const GuardedUserCreate = withPermission(UserCreatePage, ResourceName.USER, TypeAction.CREATE)
 const GuardedUserDetail = withPermission(UserDetailPage, ResourceName.USER, TypeAction.READ)
-const GuardedGroupList = withPermission(GroupListPage, ResourceName.GROUP, TypeAction.READ_ALL)
+const GuardedGroupList = withPermissionOrSelfService(GroupListPage, ResourceName.GROUP)
 const GuardedGroupCreate = withPermission(GroupCreatePage, ResourceName.GROUP, TypeAction.CREATE)
 const GuardedGroupDetail = withPermission(GroupDetailPage, ResourceName.GROUP, TypeAction.READ)
-const GuardedRoleList = withPermission(RoleListPage, ResourceName.ROLE, TypeAction.READ_ALL)
+const GuardedRoleList = withPermissionOrSelfService(RoleListPage, ResourceName.ROLE)
 const GuardedRoleCreate = withPermission(RoleCreatePage, ResourceName.ROLE, TypeAction.CREATE)
 const GuardedRoleDetail = withPermission(RoleDetailPage, ResourceName.ROLE, TypeAction.READ)
 const GuardedClientList = withPermission(ClientListPage, ResourceName.CLIENT, TypeAction.READ_ALL)
 const GuardedClientCreate = withPermission(ClientCreatePage, ResourceName.CLIENT, TypeAction.CREATE)
 const GuardedClientDetail = withPermission(ClientDetailPage, ResourceName.CLIENT, TypeAction.READ)
 const GuardedResourceMatrix = withPermission(ResourcePermissionMatrixPage, ResourceName.RESOURCE, TypeAction.READ_ALL)
-const GuardedSessions = withPermission(SessionsPage, ResourceName.SESSION, TypeAction.READ_ALL)
-const GuardedRefreshTokens = withPermission(RefreshTokensPage, ResourceName.REFRESH_TOKEN, TypeAction.READ_ALL)
-const GuardedEvents = withPermission(EventsPage, ResourceName.EVENT, TypeAction.READ_ALL)
+const GuardedSessions = withPermissionOrSelfService(SessionsPage, ResourceName.SESSION)
+const GuardedRefreshTokens = withPermissionOrSelfService(RefreshTokensPage, ResourceName.REFRESH_TOKEN)
+const GuardedEvents = withPermissionOrSelfService(EventsPage, ResourceName.EVENT)
 
 /**
  * Realm id lives in the URL (/r/:realmId/...) even though the backend itself ignores

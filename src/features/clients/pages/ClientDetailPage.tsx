@@ -12,6 +12,12 @@ import { ClientGeneralTab } from '@/features/clients/components/ClientGeneralTab
 import { ClientSecretTab } from '@/features/clients/components/ClientSecretTab'
 import { ClientRolesTab } from '@/features/clients/components/ClientRolesTab'
 import { ClientRedirectUrisForm } from '@/features/clients/components/ClientRedirectUrisForm'
+import { ClientDashboardViewsForm } from '@/features/dashboard/components/ClientDashboardViewsForm'
+
+/** Dashboard views are an admin-console concept — every metric is computed from the
+ * caller's own realm, never from a client's own business data — so the catalog only
+ * makes sense for the client the admin console itself runs behind. */
+const IAM_CLIENT_ID = (import.meta.env.VITE_IAM_CLIENT_ID as string | undefined) ?? ''
 
 export default function ClientDetailPage() {
   const { t } = useTranslation('clients')
@@ -51,6 +57,15 @@ export default function ClientDetailPage() {
             label: 'Redirect URIs',
             content: <ClientRedirectUrisForm client={client} />,
           },
+          ...(client.clientId === IAM_CLIENT_ID
+            ? [
+                {
+                  key: 'dashboard-views',
+                  label: 'Dashboard views',
+                  content: <ClientDashboardViewsForm client={client} />,
+                },
+              ]
+            : []),
           { key: 'secret', label: t('tabs.secret'), content: <ClientSecretTab client={client} /> },
           { key: 'roles', label: t('tabs.roles'), content: <ClientRolesTab clientIdInternal={client.clientIdInternal} /> },
         ]}

@@ -2,36 +2,55 @@ import { useState } from 'react'
 import { Trash2, User as UserIcon } from 'lucide-react'
 import { useListUserRolesQuery, useAssignUserRoleMutation, useRemoveUserRoleMutation } from '@/api/endpoints/userRole.api'
 import { useListUsersQuery } from '@/api/endpoints/user.api'
+import { useListRealmsQuery } from '@/api/endpoints/realm.api'
 import { useRealmId } from '@/common/hooks/useRealmId'
 import { useDebounce } from '@/common/hooks/useDebounce'
 import { SearchMultiSelect, type SearchMultiSelectOption } from '@/common/components/ui/SearchMultiSelect'
 import { Button } from '@/common/components/ui/Button'
+import { Select } from '@/common/components/ui/Select'
 import { EmptyState } from '@/common/components/ui/EmptyState'
 import { Skeleton } from '@/common/components/ui/Skeleton'
 import { confirm } from '@/common/utils/confirm'
 import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
 import { useCan } from '@/common/hooks/usePermission'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import { UserIdentity } from '@/common/components/ui/UserIdentity'
 
 /** The reverse view of UserRolesTab — who currently holds this role, and a way to
- * assign it to several users at once. User search is scoped to this realm (matches
- * every other assignment picker in the app) and always capped to 10 matches at a
- * time, since a realm's user list can be far too large for a plain <select>. */
+ * assign it to several users at once. A role's client can be shared across many
+ * realms (e.g. iam-client), so a Master admin gets a realm picker (defaulting to
+ * their own/Master realm) to avoid seeing every realm's assignees mixed together; a
+ * tenant realm has nothing to pick — they only ever see their own realm's assignees,
+ * enforced server-side regardless of this UI. User search is scoped to this realm
+ * (matches every other assignment picker in the app) and always capped to 10 matches
+ * at a time, since a realm's user list can be far too large for a plain <select>. */
 export function RoleUsersTab({ roleId }: { roleId: string }) {
   const realmId = useRealmId()
+  const { user, isMasterRealmUser } = useCurrentUser()
   const canManage = useCan(ResourceName.USER_ROLE, TypeAction.CREATE)
+  // Hooks must run unconditionally every render (Rules of Hooks) — combine after.
+  const hasReadAllRealms = useCan(ResourceName.REALM, TypeAction.READ_ALL)
+  const canListRealms = isMasterRealmUser && hasReadAllRealms
   const toast = useToast()
 
-  const { data: assignedData, isLoading } = useListUserRolesQuery({ roleId, limit: 200 })
+  const [selectedRealmId, setSelectedRealmId] = useState(user?.realmId ?? '')
+  const { data: realmsData } = useListRealmsQuery(undefined, { skip: !canListRealms })
+  const realms = realmsData?.data?.items ?? []
+  // Master picks any realm (defaulting to their own/Master realm); a tenant realm has
+  // no picker at all — always their own current realm, matching the backend's forced
+  // scoping for non-master callers regardless of what's sent.
+  const effectiveRealmId = canListRealms ? selectedRealmId : realmId
+
+  const { data: assignedData, isLoading } = useListUserRolesQuery({ roleId, realmId: effectiveRealmId || undefined, limit: 200 })
   const assigned = assignedData?.data?.items ?? []
   const assignedIds = new Set(assigned.map((ur) => ur.userId))
 
   const [userQuery, setUserQuery] = useState('')
   const debouncedUserQuery = useDebounce(userQuery, 300)
   const { data: userOptionsData, isFetching: isSearchingUsers } = useListUsersQuery({
-    realmId,
+    realmId: effectiveRealmId,
     search: debouncedUserQuery || undefined,
     limit: 10,
   })
@@ -79,6 +98,17 @@ export function RoleUsersTab({ roleId }: { roleId: string }) {
 
   return (
     <div className="max-w-lg">
+      {canListRealms && (
+        <div className="mb-4 max-w-xs">
+          <Select
+            label="Realm"
+            options={realms.map((r) => ({ value: r.realmId, label: r.name }))}
+            value={selectedRealmId}
+            onChange={(e) => setSelectedRealmId(e.target.value)}
+          />
+        </div>
+      )}
+
       {canManage && (
         <div className="mb-4 flex flex-col gap-3">
           <SearchMultiSelect
