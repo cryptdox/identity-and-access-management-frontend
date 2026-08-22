@@ -9,7 +9,7 @@ import { EmptyState } from '@/common/components/ui/EmptyState'
 import { FadeIn } from '@/common/components/transitions/FadeIn'
 import { TimeRangePicker } from '@/features/dashboard/components/TimeRangePicker'
 import { DashboardChart } from '@/features/dashboard/components/DashboardChart'
-import type { DashboardChartType, DashboardTimeRange, DashboardViewWithData } from '@/features/dashboard/dashboard.types'
+import type { DashboardChartType, DashboardGranularity, DashboardTimeRange, DashboardViewWithData } from '@/features/dashboard/dashboard.types'
 
 // Which chart types make sense for each data kind — a breakdown (category snapshot)
 // has no continuous x-axis, so LINE/SCATTER don't apply to it the way they do to a
@@ -59,7 +59,7 @@ function StatCard({ view, delay }: { view: DashboardViewWithData; delay: number 
   )
 }
 
-function ChartCard({ view, delay }: { view: DashboardViewWithData; delay: number }) {
+function ChartCard({ view, delay, granularity }: { view: DashboardViewWithData; delay: number; granularity?: DashboardGranularity }) {
   const isBreakdown = view.data.kind === 'breakdown'
   const choices = CHART_TYPE_CHOICES[isBreakdown ? 'breakdown' : 'timeseries']
   // Local-only preview switch — lets a viewer see the same data as, say, a line
@@ -97,7 +97,7 @@ function ChartCard({ view, delay }: { view: DashboardViewWithData; delay: number
             ))}
           </div>
         </div>
-        <DashboardChart chartType={chartType} data={view.data} />
+        <DashboardChart chartType={chartType} data={view.data} granularity={isBreakdown ? undefined : granularity} />
       </div>
     </FadeIn>
   )
@@ -154,7 +154,7 @@ export default function DashboardPage() {
               <TimeRangePicker onChange={setRange} />
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {timeseriesViews.map((view, i) => (
-                  <ChartCard key={view.dashboardViewId} view={view} delay={i * 0.05} />
+                  <ChartCard key={view.dashboardViewId} view={view} delay={i * 0.05} granularity={range?.granularity} />
                 ))}
               </div>
             </div>
