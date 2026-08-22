@@ -13,10 +13,19 @@ declare global {
   }
 }
 
-// Cloudflare's published "always passes" test site key — used until a real one
-// is configured via VITE_TURNSTILE_SITE_KEY. Must match the backend's
-// TURNSTILE_SECRET_KEY test default (captcha.middleware.ts) for local dev to work.
-const TURNSTILE_SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? '1x00000000000000000000AA'
+// Cloudflare's published "always passes" test site key — used for every build
+// except a real production one (import.meta.env.PROD, set by `vite build`),
+// regardless of whether a real VITE_TURNSTILE_SITE_KEY is configured.
+// Mirrors the backend's captcha.middleware.ts, which does the same for
+// TURNSTILE_SECRET_KEY based on PHASE — Cloudflare's real bot-detection
+// heuristics routinely flag ordinary dev traffic (VPNs, cloud/VM IPs,
+// unusual browser fingerprints) as suspicious, which has nothing to do with
+// whether the app itself works; real anti-bot protection only matters
+// against actual production traffic. These two values are a matched pair.
+const CLOUDFLARE_TEST_SITE_KEY = '1x00000000000000000000AA'
+const TURNSTILE_SITE_KEY = import.meta.env.PROD
+  ? ((import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? CLOUDFLARE_TEST_SITE_KEY)
+  : CLOUDFLARE_TEST_SITE_KEY
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
 
 let scriptLoadingPromise: Promise<void> | null = null
