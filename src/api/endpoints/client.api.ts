@@ -24,9 +24,9 @@ export const clientApi = baseApi.injectEndpoints({
             ]
           : [{ type: 'Client' as const, id: 'LIST' }],
     }),
-    getClient: builder.query<ApiResponse<Client>, string>({
-      query: (clientIdInternal) => ({ url: `/client/${clientIdInternal}`, method: 'GET' }),
-      providesTags: (_result, _error, clientIdInternal) => [{ type: 'Client', id: clientIdInternal }],
+    getClient: builder.query<ApiResponse<Client>, { clientIdInternal: string; realmId?: string }>({
+      query: ({ clientIdInternal, realmId }) => ({ url: `/client/${clientIdInternal}`, method: 'GET', params: realmId ? { realmId } : undefined }),
+      providesTags: (_result, _error, { clientIdInternal }) => [{ type: 'Client', id: clientIdInternal }],
     }),
     createClient: builder.mutation<ApiResponse<Client>, CreateClientDto>({
       query: (body) => ({ url: '/client', method: 'POST', data: body }),

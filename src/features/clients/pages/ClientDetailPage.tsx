@@ -24,7 +24,7 @@ export default function ClientDetailPage() {
   const { clientIdInternal } = useParams<{ clientIdInternal: string }>()
   const realmId = useRealmId()
   const navigate = useNavigate()
-  const { data, isLoading, isError } = useGetClientQuery(clientIdInternal ?? '', { skip: !clientIdInternal })
+  const { data, isLoading, isError } = useGetClientQuery({ clientIdInternal: clientIdInternal ?? '', realmId }, { skip: !clientIdInternal })
   const client = data?.data
 
   if (isLoading) {

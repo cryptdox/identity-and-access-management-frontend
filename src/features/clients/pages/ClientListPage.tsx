@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Plus } from 'lucide-react'
+import { Plus, Copy } from 'lucide-react'
 import { useListClientsQuery } from '@/api/endpoints/client.api'
 import { useRealmId } from '@/common/hooks/useRealmId'
 import { usePagination } from '@/common/hooks/usePagination'
 import { useDebounce } from '@/common/hooks/useDebounce'
+import { useToast } from '@/common/hooks/useToast'
 import { PageHeader } from '@/common/components/ui/PageHeader'
 import { DataTable, type DataTableColumn } from '@/common/components/ui/DataTable'
 import { Badge } from '@/common/components/ui/Badge'
@@ -18,6 +19,7 @@ export default function ClientListPage() {
   const { t } = useTranslation('clients')
   const realmId = useRealmId()
   const navigate = useNavigate()
+  const toast = useToast()
   const canCreate = useCan(ResourceName.CLIENT, TypeAction.CREATE)
   const { params, page, setPage, setSearch, state } = usePagination()
   const [searchInput, setSearchInput] = useState('')
@@ -41,7 +43,26 @@ export default function ClientListPage() {
     {
       key: 'crAccessCode',
       header: 'CR Access code',
-      render: (c) => (c.crAccessCode ? <code className="text-xs">{c.crAccessCode}</code> : '—'),
+      render: (c) =>
+        c.crAccessCode ? (
+          <span className="flex items-center gap-1.5">
+            <code className="text-xs">{c.crAccessCode}</code>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                void navigator.clipboard.writeText(c.crAccessCode!)
+                toast.success('Copied to clipboard')
+              }}
+              className="rounded-lg p-1 text-text-secondary transition-colors hover:bg-surface-alt"
+              aria-label="Copy access code"
+            >
+              <Copy className="size-3.5" />
+            </button>
+          </span>
+        ) : (
+          '—'
+        ),
     },
   ]
 

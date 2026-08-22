@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react'
 import { useGetClientQuery } from '@/api/endpoints/client.api'
 import { useListResourcesQuery } from '@/api/endpoints/resource.api'
 import { useListPermissionsByClientQuery } from '@/api/endpoints/permission.api'
+import { useRealmId } from '@/common/hooks/useRealmId'
 import { PageHeader } from '@/common/components/ui/PageHeader'
 import { Button } from '@/common/components/ui/Button'
 import { Skeleton } from '@/common/components/ui/Skeleton'
@@ -18,11 +19,13 @@ import { ResourceName, TypeAction } from '@/api/types/enums.types'
 export default function ResourcePermissionMatrixPage() {
   const { t } = useTranslation('resources')
   const { clientIdInternal } = useParams<{ clientIdInternal: string }>()
+  const realmId = useRealmId()
   const [modalOpen, setModalOpen] = useState(false)
 
-  const { data: clientData, isLoading: isClientLoading } = useGetClientQuery(clientIdInternal ?? '', {
-    skip: !clientIdInternal,
-  })
+  const { data: clientData, isLoading: isClientLoading } = useGetClientQuery(
+    { clientIdInternal: clientIdInternal ?? '', realmId },
+    { skip: !clientIdInternal },
+  )
   const client = clientData?.data
   // Creating resources for a client is restricted server-side to its owning realm
   // (client.isOwner already folds in the Master bypass).
