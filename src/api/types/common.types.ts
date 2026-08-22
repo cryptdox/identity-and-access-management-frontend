@@ -26,4 +26,7 @@ export interface ApiError {
   status: number
   message: string
   stack?: string
+  // Some endpoints (e.g. package downgrade confirmation) put extra structured
+  // detail here on a non-2xx response, beyond the plain error message.
+  data?: unknown
 }

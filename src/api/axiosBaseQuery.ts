@@ -31,6 +31,7 @@ export function axiosBaseQuery(): BaseQueryFn<AxiosBaseQueryArgs, unknown, ApiEr
           status: axiosError.response?.status ?? 0,
           message:
             axiosError.response?.data?.message ?? axiosError.message ?? 'Unknown network error',
+          data: axiosError.response?.data?.data,
         },
       }
     }

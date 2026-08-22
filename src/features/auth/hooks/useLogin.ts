@@ -11,11 +11,12 @@ export function useLogin() {
   const [fetchMe] = useLazyGetMeQuery()
   const dispatch = useAppDispatch()
 
-  const login = async (values: LoginFormValues) => {
+  const login = async (values: LoginFormValues, captchaToken: string) => {
     const result = await loginMutation({
       crAccessCode: values.crAccessCode,
       email: values.email,
       password: values.password,
+      captchaToken,
     }).unwrap()
 
     if (!result.data) throw new Error('Login response missing data')

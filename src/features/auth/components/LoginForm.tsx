@@ -7,6 +7,7 @@ import { loginSchema, type LoginFormValues } from '@/features/auth/schemas/login
 import { useLogin } from '@/features/auth/hooks/useLogin'
 import { Input } from '@/common/components/ui/Input'
 import { Button } from '@/common/components/ui/Button'
+import { Turnstile } from '@/common/components/ui/Turnstile'
 import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
 
@@ -22,6 +23,7 @@ export function LoginForm() {
   const navigate = useNavigate()
   const location = useLocation()
   const [showPassword, setShowPassword] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState('')
 
   const from = (location.state as { from?: Location })?.from?.pathname ?? '/'
 
@@ -29,8 +31,13 @@ export function LoginForm() {
     initialValues: { crAccessCode: DEFAULT_CR_ACCESS_CODE, email: '', password: '', rememberDevice: false },
     validationSchema: loginSchema,
     onSubmit: async (values, { setSubmitting }) => {
+      if (!captchaToken) {
+        toast.error('Please complete the verification challenge')
+        setSubmitting(false)
+        return
+      }
       try {
-        const user = await login(values)
+        const user = await login(values, captchaToken)
         // `from` is wherever the browser was before hitting the login gate — if that
         // was a realm-scoped URL, it belongs to whoever was logged in *before*. If a
         // different account just signed in (browser left on a stale/foreign-realm
@@ -112,6 +119,8 @@ export function LoginForm() {
         />
         {t('rememberDevice')}
       </label>
+
+      <Turnstile onVerify={setCaptchaToken} />
 
       <Button type="submit" loading={isLoading || formik.isSubmitting} className="mt-2">
         {t('signIn')}

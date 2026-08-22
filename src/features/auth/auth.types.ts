@@ -15,6 +15,7 @@ export interface LoginDto {
 
 export interface LoginRequest extends LoginDto {
   crAccessCode: string
+  captchaToken: string
 }
 
 export interface RegisterDto {

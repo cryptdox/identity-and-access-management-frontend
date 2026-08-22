@@ -6,6 +6,7 @@ import { Skeleton } from '@/common/components/ui/Skeleton'
 import { Tabs } from '@/common/components/ui/Tabs'
 import { RealmGeneralForm } from '@/features/realms/components/RealmGeneralForm'
 import { RealmSettingsForm } from '@/features/realms/components/RealmSettingsForm'
+import { RealmPackageTab } from '@/features/realms/components/RealmPackageTab'
 
 export default function RealmSettingsPage() {
   const { t } = useTranslation('realms')
@@ -31,6 +32,7 @@ export default function RealmSettingsPage() {
               label: t('settings.advanced'),
               content: <RealmSettingsForm realmId={realmId} />,
             },
+            { key: 'package', label: 'Package', content: <RealmPackageTab realmId={realmId} /> },
           ]}
         />
       )}

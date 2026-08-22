@@ -77,21 +77,35 @@ export default function RealmListPage() {
     {
       key: 'actions',
       header: '',
-      // Master's own realm never gets this button — disabling it would lock
-      // every admin, including Master's own, out of the whole console.
       render: (r) =>
-        isMasterRealmUser && r.realmId !== user?.realmId ? (
-          <Button
-            size="sm"
-            variant="outline"
-            loading={pendingRealmId === r.realmId}
-            onClick={(e) => {
-              e.stopPropagation()
-              void handleToggleEnabled(r)
-            }}
-          >
-            {r.enabled ? 'Disable' : 'Enable'}
-          </Button>
+        isMasterRealmUser ? (
+          <div className="flex justify-end gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation()
+                navigate(`/r/${r.realmId}/settings`)
+              }}
+            >
+              Manage plan
+            </Button>
+            {/* Master's own realm never gets Enable/Disable — that would lock
+            every admin, including Master's own, out of the whole console. */}
+            {r.realmId !== user?.realmId && (
+              <Button
+                size="sm"
+                variant="outline"
+                loading={pendingRealmId === r.realmId}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  void handleToggleEnabled(r)
+                }}
+              >
+                {r.enabled ? 'Disable' : 'Enable'}
+              </Button>
+            )}
+          </div>
         ) : null,
     },
   ]
