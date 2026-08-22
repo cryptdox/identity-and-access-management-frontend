@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff } from 'lucide-react'
 import { loginSchema, type LoginFormValues } from '@/features/auth/schemas/login.schema'
 import { useLogin } from '@/features/auth/hooks/useLogin'
+import { isMasterOnlyTopLevelPath } from '@/routes/masterOnlyPaths'
 import { Input } from '@/common/components/ui/Input'
 import { Button } from '@/common/components/ui/Button'
 import { Turnstile } from '@/common/components/ui/Turnstile'
@@ -47,12 +48,15 @@ export function LoginForm() {
         // master users: a fresh login should always land in the user's OWN default
         // realm, never wherever they happened to be browsing before signing out.
         const realmMatch = from.match(/^\/r\/([^/]+)\//)
-        // Master-only top-level pages (routes.config.tsx: /realms, /realms/new — no
+        // Master-only top-level pages (routes.config.tsx: /realms, /packages — no
         // /r/:realmId prefix, so realmMatch above never catches these) must never be
         // trusted for a non-Master account either, for the same reason: the browser
-        // could've been left on /realms by a Master admin, then a tenant admin signs
-        // in on the same machine and would otherwise get bounced there and rejected.
-        const isMasterOnlyPath = from === '/realms' || from.startsWith('/realms/')
+        // could've been left on one of these by a Master admin, then a tenant admin
+        // signs in on the same machine and would otherwise get bounced there and
+        // rejected. See routes/masterOnlyPaths.ts — the single source of truth for
+        // this list, so it can't silently drift out of sync with routes.config.tsx
+        // the way it did when /packages was added but not added here too.
+        const isMasterOnlyPath = isMasterOnlyTopLevelPath(from)
         const safeToReturn = realmMatch
           ? realmMatch[1] === user?.realmId
           : isMasterOnlyPath

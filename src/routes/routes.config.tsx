@@ -73,6 +73,10 @@ export function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route path="/" element={<HomeRedirect />} />
+          {/* Master-only top-level routes (no /r/:realmId prefix) — adding one here
+              means it must also be added to routes/masterOnlyPaths.ts, or a
+              non-Master account can get bounced through it into /unauthorized
+              after a Master admin last browsed it on the same machine. */}
           <Route path="/realms" element={<GuardedRealmList />} />
           <Route path="/realms/new" element={<GuardedRealmCreate />} />
           <Route path="/packages" element={<GuardedPackages />} />
