@@ -95,6 +95,8 @@ export interface SessionSummary {
 export interface UserProfileDetailsDto extends UserProfileDto {
   username: string
   enabled: boolean
+  createdAt: string
+  updatedAt: string
   realm: {
     realmId: string
     name: string

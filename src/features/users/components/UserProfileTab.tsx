@@ -11,12 +11,16 @@ import type { User } from '@/features/users/user.types'
 export function UserProfileTab({ user }: { user: User }) {
   const realmId = useRealmId()
   const navigate = useNavigate()
-  const { updateUser, deleteUser, isUpdating, isDeleting } = useUserMutations()
+  const { updateUser, deleteUser, sendVerifyEmail, isUpdating, isDeleting, isSendingVerifyEmail } = useUserMutations()
   const canUpdate = useCan(ResourceName.USER, TypeAction.UPDATE)
   const canDelete = useCan(ResourceName.USER, TypeAction.DELETE)
 
   async function toggleEnabled() {
     await updateUser(user.userId, { enabled: !user.enabled })
+  }
+
+  async function handleSendVerifyEmail() {
+    await sendVerifyEmail(user.userId)
   }
 
   async function handleDelete() {
@@ -39,8 +43,18 @@ export function UserProfileTab({ user }: { user: User }) {
         <span className="text-text-secondary">Email</span>
         <span className="text-text">{user.email}</span>
         <span className="text-text-secondary">Email verified</span>
-        <span>
+        <span className="flex items-center gap-2">
           <Badge tone={user.emailVerified ? 'info' : 'warning'}>{user.emailVerified ? 'Verified' : 'Unverified'}</Badge>
+          {!user.emailVerified && canUpdate && (
+            <Button
+              variant="outline"
+              size="sm"
+              loading={isSendingVerifyEmail}
+              onClick={() => void handleSendVerifyEmail()}
+            >
+              Verify email
+            </Button>
+          )}
         </span>
         <span className="text-text-secondary">Status</span>
         <span>

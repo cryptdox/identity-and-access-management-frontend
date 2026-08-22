@@ -2,6 +2,7 @@ import {
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
+  useSendUserVerifyEmailMutation,
 } from '@/api/endpoints/user.api'
 import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
@@ -12,6 +13,7 @@ export function useUserMutations() {
   const [createUserMutation, createState] = useCreateUserMutation()
   const [updateUserMutation, updateState] = useUpdateUserMutation()
   const [deleteUserMutation, deleteState] = useDeleteUserMutation()
+  const [sendVerifyEmailMutation, sendVerifyEmailState] = useSendUserVerifyEmailMutation()
 
   const createUser = async (body: CreateUserDto) => {
     try {
@@ -45,12 +47,24 @@ export function useUserMutations() {
     }
   }
 
+  const sendVerifyEmail = async (userId: string) => {
+    try {
+      await sendVerifyEmailMutation(userId).unwrap()
+      toast.success('Verification email sent')
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to send verification email'))
+      throw err
+    }
+  }
+
   return {
     createUser,
     updateUser,
     deleteUser,
+    sendVerifyEmail,
     isCreating: createState.isLoading,
     isUpdating: updateState.isLoading,
     isDeleting: deleteState.isLoading,
+    isSendingVerifyEmail: sendVerifyEmailState.isLoading,
   }
 }

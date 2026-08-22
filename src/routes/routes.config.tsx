@@ -6,6 +6,8 @@ import { withPermission } from '@/common/hocs/withPermission'
 import { withMasterRealmUser } from '@/common/hocs/withMasterRealmUser'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import LoginPage from '@/features/auth/pages/LoginPage'
+import VerifyEmailPage from '@/features/auth/pages/VerifyEmailPage'
+import ProfilePage from '@/features/auth/pages/ProfilePage'
 import HomeRedirect from '@/common/pages/HomeRedirect'
 import UnauthorizedPage from '@/common/pages/UnauthorizedPage'
 import NotFoundPage from '@/common/pages/NotFoundPage'
@@ -63,6 +65,7 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
       <Route element={<ProtectedRoute />}>
@@ -73,6 +76,7 @@ export function AppRoutes() {
 
           <Route path="/r/:realmId" element={<RealmLayout />}>
             <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route path="settings" element={<GuardedRealmSettings />} />
             <Route path="users" element={<GuardedUserList />} />
             <Route path="users/new" element={<GuardedUserCreate />} />

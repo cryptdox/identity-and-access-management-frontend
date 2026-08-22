@@ -34,13 +34,15 @@ export function LoginForm() {
         // `from` is wherever the browser was before hitting the login gate — if that
         // was a realm-scoped URL, it belongs to whoever was logged in *before*. If a
         // different account just signed in (browser left on a stale/foreign-realm
-        // URL, or someone else's session), blindly honoring it can land a non-master
-        // user on a realm they have no relationship to. Only trust `from` when it's
-        // not realm-scoped, or already points at this user's own realm; master users
-        // can legitimately go anywhere so they're exempt from this check.
+        // URL, or someone else's session), blindly honoring it lands the user on a
+        // realm they have no relationship to. Only trust `from` when it's not
+        // realm-scoped, or already points at this user's own realm — including for
+        // master users: a fresh login should always land in the user's OWN default
+        // realm, never wherever they happened to be browsing before signing out.
         const realmMatch = from.match(/^\/r\/([^/]+)\//)
-        const safeToReturn = !realmMatch || user?.isMasterRealmUser || realmMatch[1] === user?.realmId
-        navigate(safeToReturn ? from : '/', { replace: true })
+        const safeToReturn = !realmMatch || realmMatch[1] === user?.realmId
+        const defaultDestination = user?.realmId ? `/r/${user.realmId}/dashboard` : '/'
+        navigate(safeToReturn ? from : defaultDestination, { replace: true })
       } catch (err) {
         toast.error(getApiErrorMessage(err, t('invalidCredentials')))
       } finally {

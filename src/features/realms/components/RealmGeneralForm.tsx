@@ -13,12 +13,16 @@ import type { Realm } from '@/features/realms/realm.types'
 export function RealmGeneralForm({ realm }: { realm: Realm }) {
   const { updateRealm, deleteRealm, isUpdating, isDeleting } = useRealmMutations()
   const navigate = useNavigate()
-  const { isMasterRealmUser } = useCurrentUser()
+  const { user, isMasterRealmUser } = useCurrentUser()
   const canUpdate = useCan(ResourceName.REALM, TypeAction.UPDATE)
   // Realm deletion is Master-only on the backend regardless of the REALM:DELETE
   // permission grant (which every tenant admin also has, since permissions here are
   // global, not realm-scoped) — see realm.middlewares.ts.
   const canDelete = useCan(ResourceName.REALM, TypeAction.DELETE) && isMasterRealmUser
+  // isMasterRealmUser alone is the CURRENT USER's status, not "is THIS realm being
+  // viewed the Master realm" — a Master admin can browse other realms' settings too.
+  // Only true when the realm on screen is that admin's own (Master) realm.
+  const isViewingMasterRealm = isMasterRealmUser && realm.realmId === user?.realmId
 
   const formik = useFormik<UpdateRealmFormValues>({
     initialValues: { name: realm.name, enabled: realm.enabled },
@@ -54,7 +58,7 @@ export function RealmGeneralForm({ realm }: { realm: Realm }) {
           value={formik.values.name}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          disabled={!canUpdate}
+          disabled
           error={formik.touched.name ? formik.errors.name : undefined}
         />
 
@@ -64,7 +68,7 @@ export function RealmGeneralForm({ realm }: { realm: Realm }) {
             name="enabled"
             checked={formik.values.enabled}
             onChange={formik.handleChange}
-            disabled={!canUpdate}
+            disabled={!canUpdate || isViewingMasterRealm}
             className="size-4 rounded border-border text-primary focus:ring-primary/30"
           />
           Realm enabled

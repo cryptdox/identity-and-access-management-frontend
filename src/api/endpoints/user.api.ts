@@ -37,6 +37,9 @@ export const userApi = baseApi.injectEndpoints({
       query: (userId) => ({ url: `/user/${userId}`, method: 'DELETE' }),
       invalidatesTags: [{ type: 'User', id: 'LIST' }],
     }),
+    sendUserVerifyEmail: builder.mutation<ApiResponse<null>, string>({
+      query: (userId) => ({ url: `/user/${userId}/verify-email`, method: 'POST' }),
+    }),
   }),
 })
 
@@ -46,4 +49,5 @@ export const {
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
+  useSendUserVerifyEmailMutation,
 } = userApi

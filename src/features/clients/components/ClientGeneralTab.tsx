@@ -1,10 +1,12 @@
 import { useFormik } from 'formik'
 import { useNavigate } from 'react-router-dom'
+import { Copy } from 'lucide-react'
 import { useClientMutations } from '@/features/clients/hooks/useClientMutations'
 import { useRealmId } from '@/common/hooks/useRealmId'
 import { Input } from '@/common/components/ui/Input'
 import { Button } from '@/common/components/ui/Button'
 import { confirm } from '@/common/utils/confirm'
+import { useToast } from '@/common/hooks/useToast'
 import { useCan } from '@/common/hooks/usePermission'
 import { ClientOwnerOnlyNotice } from '@/common/components/ui/ClientOwnerOnlyNotice'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
@@ -13,6 +15,7 @@ import type { Client } from '@/features/clients/client.types'
 export function ClientGeneralTab({ client }: { client: Client }) {
   const realmId = useRealmId()
   const navigate = useNavigate()
+  const toast = useToast()
   const { updateClient, deleteClient, isUpdating, isDeleting } = useClientMutations()
   // Editing/deleting a client is restricted server-side to its owning realm (client.isOwner
   // already folds in the Master bypass) — a realm merely using a shared client can't.
@@ -60,11 +63,32 @@ export function ClientGeneralTab({ client }: { client: Client }) {
     <div className="flex max-w-lg flex-col gap-8">
       {!client.isOwner && <ClientOwnerOnlyNotice feature="update or delete this client" clientName={client.clientId} />}
       <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
-        <div className="grid grid-cols-[120px_1fr] gap-y-2 text-sm">
+        <div className="grid grid-cols-[120px_1fr] items-center gap-y-2 text-sm">
           <span className="text-text-secondary">Client ID</span>
           <span className="text-text">{client.clientId}</span>
           <span className="text-text-secondary">Type</span>
           <span className="text-text">{client.type}</span>
+          {client.crAccessCode && (
+            <>
+              <span className="text-text-secondary">CR Access code</span>
+              <span className="flex items-center gap-2">
+                <code className="rounded-md border border-border bg-surface-alt/50 px-2 py-0.5 font-mono text-xs text-text">
+                  {client.crAccessCode}
+                </code>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(client.crAccessCode!)
+                    toast.success('Copied to clipboard')
+                  }}
+                  className="rounded-lg p-1 text-text-secondary transition-colors hover:bg-surface-alt"
+                  aria-label="Copy access code"
+                >
+                  <Copy className="size-3.5" />
+                </button>
+              </span>
+            </>
+          )}
         </div>
 
         <label className="flex flex-col gap-1.5 text-sm font-medium text-text">

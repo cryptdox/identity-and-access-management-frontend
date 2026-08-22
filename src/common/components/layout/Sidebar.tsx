@@ -29,6 +29,12 @@ export function Sidebar() {
   const { t } = useTranslation('common')
   const { isMasterRealmUser } = useCurrentUser()
   const { can } = usePermission()
+  // isMasterRealmUser only means "belongs to the Master realm" — a Master-realm
+  // Manager/Viewer/User is still isMasterRealmUser=true but was never granted
+  // REALM:READ_ALL (only the ADMIN role gets that), so showing this link to them
+  // would be a link that 403s on click. Require both, matching the actual
+  // backend guard on GET /realm (realmMiddleware + REALM:READ_ALL).
+  const canListRealms = isMasterRealmUser && can(ResourceName.REALM, TypeAction.READ_ALL)
   // A master admin can be inside ANY realm's pages, and two realms' ids are
   // indistinguishable UUIDs — surfacing the name here (not just the breadcrumb) is
   // what stops "which realm am I even looking at" mistakes while switching around.
@@ -73,10 +79,11 @@ export function Sidebar() {
       )}
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
-        {/* Only Master-realm users can browse/manage the realm list itself (backend
-            restricts realm create/list-all/delete to isMasterRealmUser) — a tenant
-            admin only ever has their own realm, reachable via HomeRedirect already. */}
-        {isMasterRealmUser && (
+        {/* Only a Master-realm user who was actually granted REALM:READ_ALL (i.e. the
+            Master ADMIN role, not every Master-realm account) can browse the realm
+            list — everyone else only ever has their own realm, reachable via
+            HomeRedirect already. */}
+        {canListRealms && (
           <NavLink
             to="/realms"
             className={({ isActive }) =>

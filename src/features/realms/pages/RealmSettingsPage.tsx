@@ -5,7 +5,7 @@ import { PageHeader } from '@/common/components/ui/PageHeader'
 import { Skeleton } from '@/common/components/ui/Skeleton'
 import { Tabs } from '@/common/components/ui/Tabs'
 import { RealmGeneralForm } from '@/features/realms/components/RealmGeneralForm'
-import { RealmSettingsJsonEditor } from '@/features/realms/components/RealmSettingsJsonEditor'
+import { RealmSettingsForm } from '@/features/realms/components/RealmSettingsForm'
 
 export default function RealmSettingsPage() {
   const { t } = useTranslation('realms')
@@ -29,7 +29,7 @@ export default function RealmSettingsPage() {
             {
               key: 'advanced',
               label: t('settings.advanced'),
-              content: <RealmSettingsJsonEditor realmId={realmId} />,
+              content: <RealmSettingsForm realmId={realmId} />,
             },
           ]}
         />

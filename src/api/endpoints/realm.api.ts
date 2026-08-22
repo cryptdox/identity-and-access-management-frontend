@@ -1,6 +1,6 @@
 import { baseApi } from '@/api/baseApi'
 import type { ApiResponse, ListQueryParams, PaginatedData } from '@/api/types/common.types'
-import type { CreateRealmDto, Realm, UpdateRealmDto } from '@/features/realms/realm.types'
+import type { CreateRealmDto, Realm, RealmSettingKeyMeta, UpdateRealmDto } from '@/features/realms/realm.types'
 
 export const realmApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -37,6 +37,11 @@ export const realmApi = baseApi.injectEndpoints({
       query: (realmId) => ({ url: `/realm/${realmId}/settings`, method: 'GET' }),
       providesTags: (_result, _error, realmId) => [{ type: 'Realm', id: `${realmId}:settings` }],
     }),
+    // Static metadata (not per-realm) — lets the settings form render one input
+    // per key instead of hardcoding a section per key.
+    getRealmSettingKeys: builder.query<ApiResponse<RealmSettingKeyMeta[]>, void>({
+      query: () => ({ url: '/realm/settings/keys', method: 'GET' }),
+    }),
     updateRealmSettings: builder.mutation<
       ApiResponse<Record<string, unknown>>,
       { realmId: string; body: Record<string, unknown> }
@@ -57,5 +62,6 @@ export const {
   useUpdateRealmMutation,
   useDeleteRealmMutation,
   useGetRealmSettingsQuery,
+  useGetRealmSettingKeysQuery,
   useUpdateRealmSettingsMutation,
 } = realmApi

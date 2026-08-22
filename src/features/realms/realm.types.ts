@@ -28,3 +28,13 @@ export interface UpdateRealmDto {
   enabled?: boolean
   settings?: Record<string, unknown>
 }
+
+/** Mirrors backend `src/utils/realmSettingsMeta.ts` — one entry per
+ * RealmSettingKey, driving the settings form (one input rendered per entry
+ * instead of a hardcoded section per key). */
+export interface RealmSettingKeyMeta {
+  key: string
+  valueType: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'JSON'
+  label: string
+  sensitive: boolean
+}

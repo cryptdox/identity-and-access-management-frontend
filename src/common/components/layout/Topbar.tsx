@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Sun, Moon, ChevronDown, LogOut, User as UserIcon, Languages } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Sun, Moon, ChevronDown, LogOut, User as UserIcon, UserCircle, Languages } from 'lucide-react'
 import { useTheme } from '@/theme/ThemeProvider'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { setLanguage, SUPPORTED_LANGUAGES } from '@/app/preferencesSlice'
@@ -15,6 +16,12 @@ export function Topbar() {
   const language = useAppSelector((state) => state.preferences.language)
   const { user } = useCurrentUser()
   const { logout } = useLogout()
+  const navigate = useNavigate()
+  // Profile lives under /r/:realmId/profile (not a standalone top-level route) so
+  // the Sidebar — which builds its nav entirely from the :realmId param — still
+  // renders every link while viewing it. Falls back to the user's own realm when
+  // there's no :realmId in the current URL (e.g. clicking this from /realms).
+  const { realmId } = useParams<{ realmId: string }>()
 
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useClickOutside<HTMLDivElement>(() => setMenuOpen(false))
@@ -64,6 +71,17 @@ export function Topbar() {
 
         {menuOpen && (
           <div className="animate-fade-in absolute right-0 top-12 w-48 overflow-hidden rounded-xl border border-border bg-surface py-1 shadow-lg">
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false)
+                navigate(`/r/${realmId ?? user?.realmId}/profile`)
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-text transition-colors hover:bg-surface-alt"
+            >
+              <UserCircle className="size-4" />
+              My profile
+            </button>
             <button
               type="button"
               onClick={() => void logout()}
