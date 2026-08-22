@@ -21,11 +21,18 @@ export interface DataTableProps<T> {
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
   onSort?: (key: string) => void
-  page: number
-  limit: number
-  total: number
-  onPageChange: (page: number) => void
   onRowClick?: (row: T) => void
+  // Page-number pagination (offset-based) — used by every list in this app
+  // except the Realms list / Package requests list, which use cursor mode below.
+  page?: number
+  limit?: number
+  total?: number
+  onPageChange?: (page: number) => void
+  // Cursor ("load more") pagination — takes over the footer instead of the
+  // page-number controls whenever `onLoadMore` is provided.
+  hasMore?: boolean
+  onLoadMore?: () => void
+  loadingMore?: boolean
 }
 
 export function DataTable<T>({
@@ -42,10 +49,14 @@ export function DataTable<T>({
   total,
   onPageChange,
   onRowClick,
+  hasMore,
+  onLoadMore,
+  loadingMore,
 }: DataTableProps<T>) {
-  const pageCount = Math.max(1, Math.ceil(total / limit))
-  const from = total === 0 ? 0 : page * limit + 1
-  const to = Math.min(total, (page + 1) * limit)
+  const isCursorMode = Boolean(onLoadMore)
+  const pageCount = total !== undefined && limit ? Math.max(1, Math.ceil(total / limit)) : 1
+  const from = !total || page === undefined || !limit ? 0 : page * limit + 1
+  const to = !total || page === undefined || !limit ? 0 : Math.min(total, (page + 1) * limit)
 
   return (
     <div className="animate-fade-in overflow-hidden rounded-2xl border border-border bg-surface">
@@ -116,7 +127,20 @@ export function DataTable<T>({
         )}
       </div>
 
-      {!loading && total > 0 && (
+      {!loading && isCursorMode && rows.length > 0 && (hasMore || loadingMore) && (
+        <div className="flex items-center justify-center border-t border-border px-4 py-3">
+          <button
+            type="button"
+            disabled={loadingMore}
+            onClick={onLoadMore}
+            className="rounded-lg px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-surface-alt disabled:pointer-events-none disabled:opacity-50"
+          >
+            {loadingMore ? 'Loading…' : 'Load more'}
+          </button>
+        </div>
+      )}
+
+      {!loading && !isCursorMode && total !== undefined && total > 0 && page !== undefined && onPageChange && (
         <div className="flex items-center justify-between border-t border-border px-4 py-3 text-sm text-text-secondary">
           <span>
             Showing {from}-{to} of {total}

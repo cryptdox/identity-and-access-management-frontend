@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ShieldCheck } from 'lucide-react'
 import { LoginForm } from '@/features/auth/components/LoginForm'
@@ -8,14 +9,11 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen bg-bg">
       <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-primary to-secondary p-10 text-white lg:flex">
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="flex items-center gap-2"
-        >
-          <ShieldCheck className="size-6" />
-          <span className="font-semibold">IAM Console</span>
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+            <ShieldCheck className="size-6" />
+            <span className="font-semibold">IAM Console</span>
+          </Link>
         </motion.div>
 
         <motion.div
@@ -38,10 +36,10 @@ export default function LoginPage() {
           className="w-full max-w-sm"
         >
           <div className="mb-8 lg:hidden">
-            <div className="flex items-center gap-2 text-text">
+            <Link to="/" className="flex items-center gap-2 text-text transition-opacity hover:opacity-80">
               <ShieldCheck className="size-6 text-primary" />
               <span className="font-semibold">IAM Console</span>
-            </div>
+            </Link>
           </div>
           <h2 className="text-xl font-semibold text-text">{t('signIn')}</h2>
           <p className="mt-1 text-sm text-text-secondary">{t('signInSubtitle')}</p>

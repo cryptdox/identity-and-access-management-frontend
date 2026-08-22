@@ -4,6 +4,7 @@ import {
   useUpdateRealmSettingsMutation,
   useResetRealmRateLimitersMutation,
   useResetAllRateLimitersMutation,
+  useRejectRealmRequestMutation,
 } from '@/api/endpoints/realm.api'
 import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
@@ -19,6 +20,7 @@ export function useRealmMutations() {
   const [updateSettingsMutation, updateSettingsState] = useUpdateRealmSettingsMutation()
   const [resetRateLimitersMutation, resetRateLimitersState] = useResetRealmRateLimitersMutation()
   const [resetAllRateLimitersMutation, resetAllRateLimitersState] = useResetAllRateLimitersMutation()
+  const [rejectRealmRequestMutation, rejectRealmRequestState] = useRejectRealmRequestMutation()
 
   const createRealm = async (body: CreateRealmDto) => {
     try {
@@ -75,16 +77,29 @@ export function useRealmMutations() {
     }
   }
 
+  const rejectRealmRequest = async (realmId: string) => {
+    try {
+      const result = await rejectRealmRequestMutation(realmId).unwrap()
+      toast.success('Realm request rejected')
+      return result.data
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to reject realm request'))
+      throw err
+    }
+  }
+
   return {
     createRealm,
     updateRealm,
     updateRealmSettings,
     resetRateLimiters,
     resetAllRateLimiters,
+    rejectRealmRequest,
     isCreating: createState.isLoading,
     isUpdating: updateState.isLoading,
     isUpdatingSettings: updateSettingsState.isLoading,
     isResettingRateLimiters: resetRateLimitersState.isLoading,
     isResettingAllRateLimiters: resetAllRateLimitersState.isLoading,
+    isRejectingRealmRequest: rejectRealmRequestState.isLoading,
   }
 }

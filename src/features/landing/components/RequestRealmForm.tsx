@@ -42,7 +42,7 @@ export function RequestRealmForm() {
 
   if (submitted) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface p-8 text-center">
+      <div className="flex flex-col items-center gap-3 py-4 text-center">
         <CheckCircle2 className="size-10 text-success" />
         <p className="text-lg font-semibold text-text">Request received</p>
         <p className="max-w-sm text-sm text-text-secondary">
@@ -54,11 +54,8 @@ export function RequestRealmForm() {
   }
 
   return (
-    <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-8">
-      <div>
-        <p className="text-lg font-semibold text-text">Start your free trial</p>
-        <p className="mt-1 text-sm text-text-secondary">10 users, 5 concurrent logins, free for 1 month. No card required.</p>
-      </div>
+    <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
+      <p className="text-sm text-text-secondary">10 users, 5 concurrent logins, free for 1 month. No card required.</p>
 
       <Input
         label="Organization name"

@@ -10,7 +10,15 @@ import { useAppSelector } from '@/app/hooks'
  * same claim or it'd show actions that only fail once clicked. */
 export function withMasterRealmUser<P extends object>(Component: ComponentType<P>) {
   return function MasterRealmGated(props: P) {
+    const status = useAppSelector((state) => state.auth.status)
     const isMasterRealmUser = useAppSelector((state) => Boolean(state.auth.user?.isMasterRealmUser))
+    // Logging out clears `user` before/around the same render this component's
+    // route unmounts — without this check it briefly reads isMasterRealmUser as
+    // false and fires its own <Navigate to="/unauthorized">, which can win the
+    // race against ProtectedRoute's "/login" redirect and strand the user on
+    // /unauthorized. Only make the master-only call once actually authenticated;
+    // otherwise defer to ProtectedRoute, which owns the "not logged in" redirect.
+    if (status !== 'authenticated') return null
     if (!isMasterRealmUser) return <Navigate to="/unauthorized" replace />
     return <Component {...props} />
   }

@@ -33,6 +33,7 @@ export const ResourceName = {
   RESOURCE: 'RESOURCE',
   PERMISSION: 'PERMISSION',
   EVENT: 'EVENT',
+  PACKAGE: 'PACKAGE',
 } as const
 export type ResourceName = (typeof ResourceName)[keyof typeof ResourceName]
 

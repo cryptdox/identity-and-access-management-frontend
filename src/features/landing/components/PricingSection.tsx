@@ -9,7 +9,7 @@ import type { BillingCycle, PackageTier } from '@/features/realms/realmPackage.t
 const TIER_ORDER: PackageTier[] = ['STARTER', 'GROWTH', 'BUSINESS', 'PRO', 'SCALE', 'ENTERPRISE']
 const FEATURED_TIER: PackageTier = 'GROWTH'
 
-export function PricingSection() {
+export function PricingSection({ onRequestAccess }: { onRequestAccess: () => void }) {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('MONTHLY')
   const { data, isLoading } = useListPackageDefinitionsQuery()
 
@@ -80,12 +80,7 @@ export function PricingSection() {
                     Multi-tenant realms, RBAC, audit log
                   </li>
                 </ul>
-                <Button
-                  variant={featured ? 'primary' : 'outline'}
-                  size="sm"
-                  className="mt-6"
-                  onClick={() => document.getElementById('get-started')?.scrollIntoView({ behavior: 'smooth' })}
-                >
+                <Button variant={featured ? 'primary' : 'outline'} size="sm" className="mt-6" onClick={onRequestAccess}>
                   {def.price == null ? 'Talk to sales' : 'Start free trial'}
                 </Button>
               </div>

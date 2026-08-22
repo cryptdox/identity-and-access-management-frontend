@@ -8,6 +8,7 @@ import type {
   AssignPackageDto,
   CreatePackageRequestDto,
   RequestRealmDto,
+  CursorPage,
 } from '@/features/realms/realmPackage.types'
 
 export const realmApi = baseApi.injectEndpoints({
@@ -41,6 +42,13 @@ export const realmApi = baseApi.injectEndpoints({
       query: (realmId) => ({ url: `/realm/${realmId}`, method: 'DELETE' }),
       invalidatesTags: [{ type: 'Realm', id: 'LIST' }],
     }),
+    rejectRealmRequest: builder.mutation<ApiResponse<Realm>, string>({
+      query: (realmId) => ({ url: `/realm/${realmId}/reject`, method: 'POST' }),
+      invalidatesTags: (_result, _error, realmId) => [
+        { type: 'Realm', id: realmId },
+        { type: 'Realm', id: 'LIST' },
+      ],
+    }),
     getRealmSettings: builder.query<ApiResponse<Record<string, unknown>>, string>({
       query: (realmId) => ({ url: `/realm/${realmId}/settings`, method: 'GET' }),
       providesTags: (_result, _error, realmId) => [{ type: 'Realm', id: `${realmId}:settings` }],
@@ -67,6 +75,23 @@ export const realmApi = baseApi.injectEndpoints({
       query: () => ({ url: '/realm/rate-limit/reset-all', method: 'POST' }),
     }),
 
+    // Cursor (keyset) pagination, dedicated to the Realms list page's "Realms"
+    // tab — kept separate from listRealms above (still offset-paginated, still
+    // used by RoleUsersTab.tsx's realm picker, unchanged).
+    listRealmsCursor: builder.query<
+      ApiResponse<CursorPage<Realm>>,
+      | {
+          cursor?: string
+          limit?: number
+          search?: string
+          enabled?: boolean
+          origin?: 'MASTER_CREATED' | 'PUBLIC_REQUEST'
+          requestStatus?: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED'
+        }
+      | void
+    >({
+      query: (params) => ({ url: '/realm/cursor-list', method: 'GET', params: params ?? undefined }),
+    }),
     // Public — no auth, used by the landing page pricing table and the
     // package-change pickers on the Package tab.
     listPackageDefinitions: builder.query<ApiResponse<PackageDefinition[]>, void>({
@@ -110,6 +135,7 @@ export const realmApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { realmId }) => [
         { type: 'Realm', id: `${realmId}:package` },
         { type: 'Realm', id: `${realmId}:package-history` },
+        { type: 'Realm', id: 'PACKAGE_REQUESTS' },
       ],
     }),
     rejectPackageRequest: builder.mutation<ApiResponse<null>, { realmId: string; requestId: string }>({
@@ -117,6 +143,7 @@ export const realmApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { realmId }) => [
         { type: 'Realm', id: `${realmId}:package` },
         { type: 'Realm', id: `${realmId}:package-history` },
+        { type: 'Realm', id: 'PACKAGE_REQUESTS' },
       ],
     }),
   }),
@@ -128,11 +155,13 @@ export const {
   useCreateRealmMutation,
   useUpdateRealmMutation,
   useDeleteRealmMutation,
+  useRejectRealmRequestMutation,
   useGetRealmSettingsQuery,
   useGetRealmSettingKeysQuery,
   useUpdateRealmSettingsMutation,
   useResetRealmRateLimitersMutation,
   useResetAllRateLimitersMutation,
+  useLazyListRealmsCursorQuery,
   useListPackageDefinitionsQuery,
   useRequestRealmMutation,
   useGetRealmPackageQuery,

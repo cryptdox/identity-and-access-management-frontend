@@ -12,6 +12,25 @@ export interface PackageDefinition {
   userLimit: number | null
   concurrentLoginLimit: number | null
   price: number | null
+  isActive: boolean
+}
+
+// Master-only — adds a new tier/billing-cycle combo to the catalog.
+export interface CreatePackageDefinitionDto {
+  tier: PackageTier
+  billingCycle: BillingCycle
+  userLimit: number | null
+  concurrentLoginLimit: number | null
+  price: number | null
+  isActive?: boolean
+}
+
+// Master-only — tier/billingCycle are immutable once created.
+export interface UpdatePackageDefinitionDto {
+  userLimit?: number | null
+  concurrentLoginLimit?: number | null
+  price?: number | null
+  isActive?: boolean
 }
 
 export interface RealmPackageRequest {
@@ -38,6 +57,7 @@ export interface RealmPackage {
 
 export interface RealmPackageLog {
   realmPackageLogId: string
+  realmId: string
   action: PackageLogAction
   fromDefinitionId: string | null
   toDefinitionId: string | null
@@ -66,6 +86,33 @@ export interface DowngradeConfirmationRequired {
   allowedUserCount: number
   excessCount: number
   message: string
+}
+
+// GET /package/requests (Packages module, cursor-paginated) needs the realm's
+// name alongside each request — Master is looking at requests from many
+// tenants at once here, unlike one realm's own Package tab.
+export interface RealmPackageRequestWithRealm extends RealmPackageRequest {
+  realmName: string
+}
+
+// GET /package/assigned — every realm's current package, name attached.
+export interface RealmPackageWithRealm {
+  realmPackageId: string
+  realmId: string
+  realmName: string
+  activeFrom: string
+  activeTo: string
+  packageDefinition: PackageDefinition
+}
+
+// GET /package/logs — every realm's package lifecycle log, name attached.
+export interface RealmPackageLogWithRealm extends RealmPackageLog {
+  realmName: string
+}
+
+export interface CursorPage<T> {
+  items: T[]
+  nextCursor: string | null
 }
 
 export interface RequestRealmDto {

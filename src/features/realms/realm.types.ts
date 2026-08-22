@@ -7,6 +7,12 @@ export interface Realm {
   settings?: Record<string, unknown> | null
   createdAt?: string
   updatedAt?: string
+  // Only populated by GET /realm/cursor-list — see RealmOrigin/RealmRequestStatus
+  // in schema.prisma. Persisted columns, not derived: a MASTER_CREATED realm is
+  // auto-APPROVED at creation; a PUBLIC_REQUEST realm starts PENDING_REVIEW and
+  // flips to APPROVED the moment Master enables it, or REJECTED if declined.
+  origin?: 'MASTER_CREATED' | 'PUBLIC_REQUEST'
+  requestStatus?: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED'
 }
 
 export interface CreateSuperAdminDto {

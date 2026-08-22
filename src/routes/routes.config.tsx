@@ -14,6 +14,7 @@ import NotFoundPage from '@/common/pages/NotFoundPage'
 import RealmListPage from '@/features/realms/pages/RealmListPage'
 import RealmCreatePage from '@/features/realms/pages/RealmCreatePage'
 import RealmSettingsPage from '@/features/realms/pages/RealmSettingsPage'
+import PackagesPage from '@/features/package/pages/PackagesPage'
 import DashboardPage from '@/features/dashboard/pages/DashboardPage'
 import UserListPage from '@/features/users/pages/UserListPage'
 import UserCreatePage from '@/features/users/pages/UserCreatePage'
@@ -38,6 +39,7 @@ import EventsPage from '@/features/events/pages/EventsPage'
 // backend's actual restriction so the UI doesn't offer actions that only fail on click.
 const GuardedRealmList = withMasterRealmUser(withPermission(RealmListPage, ResourceName.REALM, TypeAction.READ_ALL))
 const GuardedRealmCreate = withMasterRealmUser(withPermission(RealmCreatePage, ResourceName.REALM, TypeAction.CREATE))
+const GuardedPackages = withMasterRealmUser(withPermission(PackagesPage, ResourceName.PACKAGE, TypeAction.READ_ALL))
 const GuardedRealmSettings = withPermission(RealmSettingsPage, ResourceName.REALM, TypeAction.UPDATE)
 const GuardedUserList = withPermission(UserListPage, ResourceName.USER, TypeAction.READ_ALL)
 const GuardedUserCreate = withPermission(UserCreatePage, ResourceName.USER, TypeAction.CREATE)
@@ -73,6 +75,7 @@ export function AppRoutes() {
           <Route path="/" element={<HomeRedirect />} />
           <Route path="/realms" element={<GuardedRealmList />} />
           <Route path="/realms/new" element={<GuardedRealmCreate />} />
+          <Route path="/packages" element={<GuardedPackages />} />
 
           <Route path="/r/:realmId" element={<RealmLayout />}>
             <Route path="dashboard" element={<DashboardPage />} />
