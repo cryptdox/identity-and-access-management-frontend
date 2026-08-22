@@ -14,6 +14,7 @@ import { getApiErrorMessage } from '@/common/utils/apiError'
 import { formatDateTime, formatRelativeTime } from '@/common/utils/formatDate'
 import { useCan } from '@/common/hooks/usePermission'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
+import { UserIdentity } from '@/common/components/ui/UserIdentity'
 import type { UserSession } from '@/features/users/user.types'
 
 export default function SessionsPage() {
@@ -48,7 +49,7 @@ export default function SessionsPage() {
   }
 
   const columns: DataTableColumn<UserSession>[] = [
-    { key: 'userId', header: 'User', render: (s) => <span className="font-mono text-xs">{s.userId}</span> },
+    { key: 'userId', header: 'User', render: (s) => <UserIdentity user={s.user} fallbackId={s.userId} /> },
     { key: 'ipAddress', header: 'IP address', render: (s) => s.ipAddress ?? '—' },
     {
       key: 'userAgent',

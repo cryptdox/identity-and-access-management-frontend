@@ -13,6 +13,8 @@ import { getApiErrorMessage } from '@/common/utils/apiError'
 import { formatDateTime } from '@/common/utils/formatDate'
 import { useCan } from '@/common/hooks/usePermission'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
+import { UserIdentity } from '@/common/components/ui/UserIdentity'
+import { ClientIdentity } from '@/common/components/ui/ClientIdentity'
 import type { RefreshToken } from '@/features/tokens/token.types'
 
 export default function RefreshTokensPage() {
@@ -36,9 +38,9 @@ export default function RefreshTokensPage() {
   }
 
   const columns: DataTableColumn<RefreshToken>[] = [
-    { key: 'userId', header: 'User ID', render: (token) => <span className="font-mono text-xs">{token.userId}</span> },
+    { key: 'userId', header: 'User', render: (token) => <UserIdentity user={token.user} fallbackId={token.userId} /> },
     { key: 'sessionId', header: 'Session ID', render: (token) => <span className="font-mono text-xs">{token.sessionId}</span> },
-    { key: 'clientIdInternal', header: 'Client ID', render: (token) => <span className="font-mono text-xs">{token.clientIdInternal}</span> },
+    { key: 'clientIdInternal', header: 'Client', render: (token) => <ClientIdentity client={token.client} fallbackId={token.clientIdInternal} /> },
     { key: 'expiresAt', header: 'Expires', render: (token) => formatDateTime(token.expiresAt) },
     {
       key: 'revoked',

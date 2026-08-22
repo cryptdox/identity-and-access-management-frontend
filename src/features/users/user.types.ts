@@ -69,6 +69,7 @@ export interface UserSession {
   userSessionId: string
   realmId: string
   userId: string
+  user?: { userId: string; name?: string; username: string; email: string }
   ipAddress?: string | null
   userAgent?: string | null
   startedAt: string

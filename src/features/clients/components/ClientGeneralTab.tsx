@@ -24,6 +24,7 @@ export function ClientGeneralTab({ client }: { client: Client }) {
 
   const formik = useFormik({
     initialValues: {
+      name: client.name ?? '',
       redirectUris: (client.redirectUris ?? []).join('\n'),
       accessTokenTTL: client.accessTokenTTL ?? 900,
       refreshTokenTTL: client.refreshTokenTTL ?? 604800,
@@ -33,6 +34,7 @@ export function ClientGeneralTab({ client }: { client: Client }) {
     onSubmit: async (values, { setSubmitting }) => {
       try {
         await updateClient(client.clientIdInternal, {
+          name: values.name.trim() || null,
           redirectUris: values.redirectUris
             .split('\n')
             .map((s) => s.trim())
@@ -90,6 +92,15 @@ export function ClientGeneralTab({ client }: { client: Client }) {
             </>
           )}
         </div>
+
+        <Input
+          label="Display name"
+          name="name"
+          value={formik.values.name}
+          onChange={formik.handleChange}
+          disabled={!canUpdate}
+          placeholder={client.clientId}
+        />
 
         <label className="flex flex-col gap-1.5 text-sm font-medium text-text">
           Redirect URIs (one per line)

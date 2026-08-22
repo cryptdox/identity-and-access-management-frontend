@@ -5,6 +5,7 @@ export interface Event {
   realmId: string
   clientIdInternal?: string | null
   userId?: string | null
+  user?: { userId: string; name?: string; username: string; email: string }
   type: TypeEvent
   ipAddress?: string | null
   metadata?: Record<string, unknown> | null

@@ -4,7 +4,7 @@ export interface Client {
   clientIdInternal: string
   realmId?: string
   clientId?: string
-  name?: string
+  name?: string | null
   secret?: string | null
   type?: ClientTypeValue
   redirectUris?: string[] | null
@@ -36,6 +36,7 @@ export interface CreateClientDto {
 
 export interface UpdateClientDto {
   clientId?: string
+  name?: string | null
   secret?: string
   type?: ClientTypeValue
   redirectUris?: string[]

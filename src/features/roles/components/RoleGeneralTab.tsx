@@ -7,6 +7,7 @@ import { Button } from '@/common/components/ui/Button'
 import { confirm } from '@/common/utils/confirm'
 import { useCan } from '@/common/hooks/usePermission'
 import { ClientOwnerOnlyNotice } from '@/common/components/ui/ClientOwnerOnlyNotice'
+import { ClientIdentity } from '@/common/components/ui/ClientIdentity'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import type { Role } from '@/features/roles/role.types'
 
@@ -49,7 +50,10 @@ export function RoleGeneralTab({ role }: { role: Role }) {
     <div className="flex max-w-lg flex-col gap-8">
       {!role.client?.isOwner && <ClientOwnerOnlyNotice feature="edit or delete an existing role" clientName={role.client?.clientId} />}
       <form onSubmit={formik.handleSubmit} className="flex flex-col gap-4">
-        <Input label="Client" value={role.client?.clientId ?? role.clientIdInternal} disabled readOnly />
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm font-medium text-text">Client</span>
+          <ClientIdentity client={role.client} fallbackId={role.clientIdInternal} />
+        </div>
         <Input
           label="Role name"
           name="name"

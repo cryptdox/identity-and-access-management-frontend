@@ -16,6 +16,7 @@ import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
 import { useCan } from '@/common/hooks/usePermission'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
+import { UserIdentity } from '@/common/components/ui/UserIdentity'
 
 export function GroupMembersTab({ groupId }: { groupId: string }) {
   const realmId = useRealmId()
@@ -80,14 +81,13 @@ export function GroupMembersTab({ groupId }: { groupId: string }) {
         <div className="overflow-hidden rounded-xl border border-border">
           {members.map((m) => (
             <div key={m.userId} className="flex items-center justify-between border-b border-border px-4 py-2.5 text-sm last:border-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-text">
                 <UserIcon className="size-4 text-text-secondary" />
-                <span className="text-text">{m.user?.username ?? m.userId}</span>
-                <span className="text-text-secondary">{m.user?.email}</span>
+                <UserIdentity user={m.user} fallbackId={m.userId} />
               </div>
               {canManage && (
                 <button
-                  onClick={() => void handleRemove(m.userId, m.user?.username ?? m.userId)}
+                  onClick={() => void handleRemove(m.userId, m.user?.name ?? m.user?.username ?? m.userId)}
                   className="rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-danger/10 hover:text-danger"
                   aria-label="Remove member"
                 >

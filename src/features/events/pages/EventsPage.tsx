@@ -8,6 +8,7 @@ import { DataTable, type DataTableColumn } from '@/common/components/ui/DataTabl
 import { Badge } from '@/common/components/ui/Badge'
 import { EventFilterBar } from '@/features/events/components/EventFilterBar'
 import { formatDateTime } from '@/common/utils/formatDate'
+import { UserIdentity } from '@/common/components/ui/UserIdentity'
 import type { TypeEvent } from '@/api/types/enums.types'
 import type { Event } from '@/features/events/event.types'
 
@@ -47,7 +48,7 @@ export default function EventsPage() {
       header: 'Event',
       render: (e) => <Badge tone={EVENT_TONE[e.type] ?? 'neutral'}>{e.type}</Badge>,
     },
-    { key: 'userId', header: 'User', render: (e) => (e.userId ? <span className="font-mono text-xs">{e.userId}</span> : '—') },
+    { key: 'userId', header: 'User', render: (e) => (e.userId ? <UserIdentity user={e.user} fallbackId={e.userId} /> : '—') },
     { key: 'ipAddress', header: 'IP address', render: (e) => e.ipAddress ?? '—' },
     { key: 'createdAt', header: 'When', render: (e) => formatDateTime(e.createdAt) },
   ]

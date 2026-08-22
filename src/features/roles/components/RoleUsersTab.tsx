@@ -13,6 +13,7 @@ import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
 import { useCan } from '@/common/hooks/usePermission'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
+import { UserIdentity } from '@/common/components/ui/UserIdentity'
 
 /** The reverse view of UserRolesTab — who currently holds this role, and a way to
  * assign it to several users at once. User search is scoped to this realm (matches
@@ -110,14 +111,13 @@ export function RoleUsersTab({ roleId }: { roleId: string }) {
         <div className="overflow-hidden rounded-xl border border-border">
           {assigned.map((ur) => (
             <div key={ur.userId} className="flex items-center justify-between border-b border-border px-4 py-2.5 text-sm last:border-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-text">
                 <UserIcon className="size-4 text-text-secondary" />
-                <span className="text-text">{ur.user?.username ?? ur.userId}</span>
-                <span className="text-text-secondary">{ur.user?.email}</span>
+                <UserIdentity user={ur.user} fallbackId={ur.userId} />
               </div>
               {canManage && (
                 <button
-                  onClick={() => void handleRemove(ur.userId, ur.user?.username ?? ur.userId)}
+                  onClick={() => void handleRemove(ur.userId, ur.user?.name ?? ur.user?.username ?? ur.userId)}
                   className="rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-danger/10 hover:text-danger"
                   aria-label="Remove user"
                 >
