@@ -92,14 +92,14 @@ function RealmSettingField({
           {meta.label}
         </label>
       ) : meta.sensitive && !revealed ? (
-        <div className="flex items-center gap-2">
-          <code className="flex-1 truncate rounded-lg border border-border bg-surface-alt/50 px-3 py-2 font-mono text-sm text-text">
+        <div className="grid grid-cols-[1fr_2.5rem] items-center gap-3">
+          <code className="min-w-0 w-full truncate rounded-lg border border-border bg-surface-alt/50 px-3 py-2 font-mono text-sm text-text">
             {'•'.repeat(24)}
           </code>
           <button
             type="button"
             onClick={() => setRevealed(true)}
-            className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-alt"
+            className="justify-self-center rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-alt"
             aria-label="Show value"
           >
             <Eye className="size-4" />
@@ -115,19 +115,19 @@ function RealmSettingField({
           className="w-full rounded-lg border border-border bg-surface p-3 font-mono text-xs text-text focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       ) : (
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-[1fr_2.5rem] items-center gap-3">
           <Input
             type={isNumber ? 'number' : 'text'}
             value={draft as string}
             onChange={(e) => setDraft(e.target.value)}
             disabled={!canUpdate}
-            className="flex-1"
+            className="w-full"
           />
           {meta.sensitive && (
             <button
               type="button"
               onClick={() => setRevealed(false)}
-              className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-alt"
+              className="justify-self-center rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-alt"
               aria-label="Hide value"
             >
               <EyeOff className="size-4" />
@@ -182,7 +182,7 @@ export function RealmSettingsForm({ realmId }: { realmId: string }) {
 
   if (isLoadingKeys || isLoadingSettings) {
     return (
-      <div className="max-w-lg space-y-3">
+      <div className="max-w-2xl space-y-3">
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
@@ -191,7 +191,7 @@ export function RealmSettingsForm({ realmId }: { realmId: string }) {
   }
 
   return (
-    <div className="max-w-lg space-y-8">
+    <div className="max-w-2xl space-y-6">
       {keys.map((meta) => (
         <RealmSettingField
           key={meta.key}

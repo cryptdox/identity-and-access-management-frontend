@@ -25,7 +25,6 @@ export function ClientGeneralTab({ client }: { client: Client }) {
   const formik = useFormik({
     initialValues: {
       name: client.name ?? '',
-      redirectUris: (client.redirectUris ?? []).join('\n'),
       accessTokenTTL: client.accessTokenTTL ?? 900,
       refreshTokenTTL: client.refreshTokenTTL ?? 604800,
       enabled: client.enabled ?? true,
@@ -35,10 +34,6 @@ export function ClientGeneralTab({ client }: { client: Client }) {
       try {
         await updateClient(client.clientIdInternal, {
           name: values.name.trim() || null,
-          redirectUris: values.redirectUris
-            .split('\n')
-            .map((s) => s.trim())
-            .filter(Boolean),
           accessTokenTTL: Number(values.accessTokenTTL),
           refreshTokenTTL: Number(values.refreshTokenTTL),
           enabled: values.enabled,
@@ -101,18 +96,6 @@ export function ClientGeneralTab({ client }: { client: Client }) {
           disabled={!canUpdate}
           placeholder={client.clientId}
         />
-
-        <label className="flex flex-col gap-1.5 text-sm font-medium text-text">
-          Redirect URIs (one per line)
-          <textarea
-            name="redirectUris"
-            rows={3}
-            value={formik.values.redirectUris}
-            onChange={formik.handleChange}
-            disabled={!canUpdate}
-            className="rounded-lg border border-border bg-surface p-2 font-mono text-xs text-text focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-        </label>
 
         <Input
           label="Access token TTL (seconds)"

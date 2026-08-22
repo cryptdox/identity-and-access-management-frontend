@@ -11,6 +11,7 @@ import { Tabs } from '@/common/components/ui/Tabs'
 import { ClientGeneralTab } from '@/features/clients/components/ClientGeneralTab'
 import { ClientSecretTab } from '@/features/clients/components/ClientSecretTab'
 import { ClientRolesTab } from '@/features/clients/components/ClientRolesTab'
+import { ClientRedirectUrisForm } from '@/features/clients/components/ClientRedirectUrisForm'
 
 export default function ClientDetailPage() {
   const { t } = useTranslation('clients')
@@ -45,6 +46,11 @@ export default function ClientDetailPage() {
       <Tabs
         items={[
           { key: 'general', label: t('tabs.general'), content: <ClientGeneralTab client={client} /> },
+          {
+            key: 'redirect-uris',
+            label: 'Redirect URIs',
+            content: <ClientRedirectUrisForm client={client} />,
+          },
           { key: 'secret', label: t('tabs.secret'), content: <ClientSecretTab client={client} /> },
           { key: 'roles', label: t('tabs.roles'), content: <ClientRolesTab clientIdInternal={client.clientIdInternal} /> },
         ]}

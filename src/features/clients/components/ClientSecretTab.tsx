@@ -42,16 +42,16 @@ export function ClientSecretTab({ client }: { client: Client }) {
   }
 
   return (
-    <div className="max-w-lg">
+    <div className="max-w-2xl">
       {!client.isOwner && <ClientOwnerOnlyNotice feature="rotate this client's secret" clientName={client.clientId} />}
-      <div className="flex items-center gap-2">
-        <code className="flex-1 truncate rounded-lg border border-border bg-surface-alt/50 px-3 py-2 font-mono text-sm text-text">
+      <div className="grid grid-cols-[1fr_2.5rem_2.5rem] items-center gap-3">
+        <code className="min-w-0 w-full truncate rounded-lg border border-border bg-surface-alt/50 px-3 py-2 font-mono text-sm text-text">
           {revealed ? secret : '•'.repeat(32)}
         </code>
         <button
           type="button"
           onClick={() => setRevealed((v) => !v)}
-          className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-alt"
+          className="justify-self-center rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-alt"
           aria-label={revealed ? 'Hide secret' : 'Show secret'}
         >
           {revealed ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -59,7 +59,7 @@ export function ClientSecretTab({ client }: { client: Client }) {
         <button
           type="button"
           onClick={copy}
-          className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-alt"
+          className="justify-self-center rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-alt"
           aria-label="Copy secret"
         >
           <Copy className="size-4" />
