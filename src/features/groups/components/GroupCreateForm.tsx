@@ -15,7 +15,7 @@ const initialValues: CreateGroupFormValues = { name: '', parentId: '' }
 export function GroupCreateForm() {
   const realmId = useRealmId()
   const { createGroup, isCreating } = useGroupMutations()
-  const { data } = useListGroupsQuery({ realmId, limit: 200 })
+  const { data, isLoading: isGroupsLoading } = useListGroupsQuery({ realmId, limit: 200 })
   const navigate = useNavigate()
   const toast = useToast()
 
@@ -53,12 +53,15 @@ export function GroupCreateForm() {
         onBlur={formik.handleBlur}
         error={formik.touched.name ? formik.errors.name : undefined}
       />
+      {/* `parentOptions` always has a real "" value ("None") — no separate
+      placeholder option, or the select would show two entries at value="". */}
       <Select
         label="Parent group"
         name="parentId"
-        options={parentOptions}
+        options={isGroupsLoading ? [{ value: '', label: 'Loading groups…' }] : parentOptions}
         value={formik.values.parentId}
         onChange={formik.handleChange}
+        disabled={isGroupsLoading}
       />
       <div className="mt-2 flex gap-2">
         <Button type="submit" loading={isCreating || formik.isSubmitting}>

@@ -31,7 +31,7 @@ export function GroupRolesTab({ groupId }: { groupId: string }) {
   const assigned = assignedData?.data?.items ?? []
   const assignedIds = new Set(assigned.map((gr) => gr.roleId))
 
-  const { data: clientsData } = useListClientsQuery({ realmId, limit: 200 })
+  const { data: clientsData, isLoading: isClientsLoading } = useListClientsQuery({ realmId, limit: 200 })
   const clients = clientsData?.data?.items ?? []
   const [clientIdInternal, setClientIdInternal] = useState('')
 
@@ -98,6 +98,8 @@ export function GroupRolesTab({ groupId }: { groupId: string }) {
             <div className="flex-1">
               <Select
                 label="Client"
+                placeholder={isClientsLoading ? 'Loading clients…' : undefined}
+                disabled={isClientsLoading}
                 options={clients.map((c) => ({ value: c.clientIdInternal, label: c.clientId ?? c.clientIdInternal }))}
                 value={clientIdInternal}
                 onChange={(e) => {

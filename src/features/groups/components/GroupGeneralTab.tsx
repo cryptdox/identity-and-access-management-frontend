@@ -15,7 +15,7 @@ export function GroupGeneralTab({ group }: { group: Group }) {
   const realmId = useRealmId()
   const navigate = useNavigate()
   const { updateGroup, deleteGroup, isUpdating, isDeleting } = useGroupMutations()
-  const { data } = useListGroupsQuery({ realmId, limit: 200 })
+  const { data, isLoading: isGroupsLoading } = useListGroupsQuery({ realmId, limit: 200 })
   const canUpdate = useCan(ResourceName.GROUP, TypeAction.UPDATE)
   const canDelete = useCan(ResourceName.GROUP, TypeAction.DELETE)
 
@@ -59,13 +59,15 @@ export function GroupGeneralTab({ group }: { group: Group }) {
           onChange={formik.handleChange}
           disabled={!canUpdate}
         />
+        {/* `parentOptions` always has a real "" value ("None") — no separate
+        placeholder option, or the select would show two entries at value="". */}
         <Select
           label="Parent group"
           name="parentId"
-          options={parentOptions}
+          options={isGroupsLoading ? [{ value: '', label: 'Loading groups…' }] : parentOptions}
           value={formik.values.parentId}
           onChange={formik.handleChange}
-          disabled={!canUpdate}
+          disabled={!canUpdate || isGroupsLoading}
         />
         {canUpdate && (
           <Button type="submit" size="sm" className="w-fit" loading={isUpdating || formik.isSubmitting} disabled={!formik.dirty}>
