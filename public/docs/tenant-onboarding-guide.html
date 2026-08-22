@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>New Tenant Onboarding Guide</title>
+<style>
+  @page { size: A4; margin: 22mm 18mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #2f3640;
+    font-size: 15px;
+    line-height: 1.55;
+    background: #f5f6fa;
+  }
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 40px 48px 32px;
+  }
+  .toolbar {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 14px 48px 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .toolbar a, .toolbar button {
+    font-family: inherit;
+    font-size: 13px;
+    color: #0097e6;
+    background: #fff;
+    border: 1px solid #dcdde1;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .toolbar a:hover, .toolbar button:hover { background: #f5f6fa; }
+  h1 { font-size: 26px; margin: 0 0 6px; color: #0097e6; }
+  .subtitle { color: #718093; font-size: 14px; margin: 0 0 26px; }
+  h2 {
+    font-size: 17px;
+    margin: 26px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #0097e6;
+    color: #273c75;
+  }
+  .step {
+    display: flex;
+    gap: 14px;
+    margin: 14px 0;
+    page-break-inside: avoid;
+  }
+  .num {
+    flex: 0 0 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #0097e6;
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-body strong { color: #192a56; }
+  .step-body .path {
+    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+    background: #f5f6fa;
+    border: 1px solid #dcdde1;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 13px;
+    color: #273c75;
+  }
+  .note {
+    background: #f5f6fa;
+    border-left: 3px solid #e1b12c;
+    padding: 10px 14px;
+    margin: 10px 0 12px 40px;
+    font-size: 13.5px;
+    color: #718093;
+  }
+  .footer {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #dcdde1;
+    font-size: 12px;
+    color: #718093;
+  }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0 14px 40px; font-size: 13.5px; }
+  th, td { border: 1px solid #dcdde1; padding: 7px 10px; text-align: left; }
+  th { background: #f5f6fa; color: #273c75; }
+  code {
+    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+    background: #f5f6fa;
+    border: 1px solid #dcdde1;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 13px;
+    color: #273c75;
+  }
+  .flowchart { margin: 8px 0 24px; }
+  @media print {
+    body { background: #fff; }
+    .toolbar { display: none; }
+    .page { max-width: none; padding: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <a href="/docs/tenant-onboarding-guide.pdf">Download PDF</a>
+  <button onclick="window.print()">Print</button>
+</div>
+
+<div class="page">
+
+<h1>New Tenant Onboarding Guide</h1>
+<p class="subtitle">Setting up a new tenant realm on the IAM admin console — main steps, master admin and tenant admin, plus integrating your own backend.</p>
+
+<div class="flowchart">
+<svg viewBox="0 0 680 460" xmlns="http://www.w3.org/2000/svg" width="100%">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#718093" />
+    </marker>
+  </defs>
+  <style>
+    .fc-box { fill: #f5f6fa; stroke: #0097e6; stroke-width: 1.5; rx: 8; }
+    .fc-box2 { fill: #f5f6fa; stroke: #718093; stroke-width: 1.5; rx: 8; }
+    .fc-diamond { fill: #fff3d6; stroke: #e1b12c; stroke-width: 1.5; }
+    .fc-text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 12px; fill: #2f3640; text-anchor: middle; }
+    .fc-label { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 10.5px; fill: #718093; text-anchor: middle; }
+    .fc-line { stroke: #718093; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+  </style>
+
+  <rect class="fc-box" x="60" y="10" width="280" height="46" />
+  <text class="fc-text" x="200" y="38">Master: create Realm + first Admin</text>
+
+  <line class="fc-line" x1="200" y1="56" x2="200" y2="86" />
+
+  <rect class="fc-box" x="60" y="86" width="280" height="46" />
+  <text class="fc-text" x="200" y="114">Tenant admin logs in</text>
+
+  <line class="fc-line" x1="200" y1="132" x2="200" y2="162" />
+
+  <rect class="fc-box" x="60" y="162" width="280" height="46" />
+  <text class="fc-text" x="200" y="186">Configure settings</text>
+  <text class="fc-text" x="200" y="200">Create users · assign roles · groups</text>
+
+  <line class="fc-line" x1="200" y1="208" x2="200" y2="238" />
+
+  <polygon class="fc-diamond" points="200,238 320,278 200,318 80,278" />
+  <text class="fc-text" x="200" y="273">Needs its own</text>
+  <text class="fc-text" x="200" y="287">application?</text>
+
+  <line class="fc-line" x1="200" y1="318" x2="200" y2="360" />
+  <text class="fc-label" x="215" y="340">no</text>
+  <rect class="fc-box2" x="60" y="360" width="280" height="46" />
+  <text class="fc-text" x="200" y="388">Manage users via this console — done</text>
+
+  <line class="fc-line" x1="320" y1="278" x2="440" y2="278" />
+  <text class="fc-label" x="380" y="270">yes</text>
+
+  <rect class="fc-box" x="440" y="255" width="200" height="46" />
+  <text class="fc-text" x="540" y="283">Create a Client for that app</text>
+
+  <line class="fc-line" x1="540" y1="301" x2="540" y2="331" />
+
+  <rect class="fc-box" x="420" y="331" width="240" height="66" />
+  <text class="fc-text" x="540" y="356">Own backend calls</text>
+  <text class="fc-text" x="540" y="371">/auth/login → /auth/refresh</text>
+  <text class="fc-text" x="540" y="386">→ /auth/me to check a token</text>
+</svg>
+</div>
+
+<h2>Part 1 — Master admin: create the realm</h2>
+
+<div class="step">
+  <div class="num">1</div>
+  <div class="step-body">
+    <strong>Create the realm and its first admin user in one step.</strong><br/>
+    Go to <span class="path">Realms → Create Realm</span>. Provide the realm name and the
+    details for the tenant's first admin (username, email, password). This single action:
+    creates the realm, links it to the shared admin-console client with a fresh access code,
+    seeds default realm settings, and assigns that first user the ADMIN role plus an
+    "Administrators" group.
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">2</div>
+  <div class="step-body">
+    <strong>Hand off the login details to the tenant.</strong><br/>
+    They need three things to log in: the client's access code (crAccessCode) for their new
+    realm, and the admin's email + password you just set.
+  </div>
+</div>
+
+<div class="note">
+  A tenant never creates its own realm — that's a Master-only action by design. Everything
+  from here on is done by the tenant's own admin, once they're logged in.
+</div>
+
+<h2>Part 2 — Tenant admin: first login and setup</h2>
+
+<div class="step">
+  <div class="num">3</div>
+  <div class="step-body">
+    <strong>Log in.</strong><br/>
+    Enter the access code from step 2 along with the admin email and password. No realm
+    picker is needed — the access code identifies the realm automatically.
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">4</div>
+  <div class="step-body">
+    <strong>Review realm settings.</strong><br/>
+    Go to <span class="path">Settings → Advanced settings</span> and check:
+  </div>
+</div>
+<table>
+  <tr><th>Setting</th><th>Why it matters</th></tr>
+  <tr><td>Allow registration</td><td>Turn on if end users should be able to self-sign-up instead of being created manually</td></tr>
+  <tr><td>Email SMTP</td><td>Required for verify-email and reset-password emails to actually send</td></tr>
+  <tr><td>Access / refresh token TTL</td><td>Defaults to 15 minutes / 7 days — adjust if the tenant needs shorter or longer sessions</td></tr>
+</table>
+
+<div class="step">
+  <div class="num">5</div>
+  <div class="step-body">
+    <strong>Create additional users.</strong><br/>
+    <span class="path">Users → Create</span> for anyone who isn't self-registering. New users
+    get no role by default — assign one next.
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">6</div>
+  <div class="step-body">
+    <strong>Assign roles.</strong><br/>
+    From a role's <span class="path">Users</span> tab (or a user's <span class="path">Roles</span>
+    tab), assign ADMIN / MANAGER / VIEWER / AUDITOR / USER as appropriate. These roles come
+    from the shared admin-console client — the tenant doesn't need to create its own.
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">7</div>
+  <div class="step-body">
+    <strong>Group users (optional).</strong><br/>
+    <span class="path">Groups → Create</span> to organize users and assign roles at the group
+    level instead of one by one — useful once the user count grows.
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">8</div>
+  <div class="step-body">
+    <strong>Create the tenant's own application client (only if they have one).</strong><br/>
+    If the tenant is building a separate app that needs its own OAuth-style login (not just
+    admins using this console), go to <span class="path">Clients → Create</span> to get a
+    client ID/secret, redirect URIs, and that app's own resources/permissions/roles. Not
+    needed if the tenant only manages users through this console.
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">9</div>
+  <div class="step-body">
+    <strong>Spot-check the setup.</strong><br/>
+    Open <span class="path">Sessions</span>, <span class="path">Refresh Tokens</span>, and
+    <span class="path">Events</span> to confirm logins are being recorded, and note that any
+    session or token can be revoked from those pages if something looks wrong.
+  </div>
+</div>
+
+<h2>Part 3 — Using this as the identity provider for your own backend</h2>
+<p style="margin: 6px 0 14px;">
+  Only relevant if the tenant is building its own separate application and wants this
+  system to handle its login/users instead of building that themselves.
+</p>
+
+<div class="step">
+  <div class="num">10</div>
+  <div class="step-body">
+    <strong>Create a Client for that application.</strong><br/>
+    <span class="path">Clients → Create</span>. Choose <em>Confidential</em> if the app has a
+    secure backend that can hold a secret, or <em>Public</em> for a client-side-only app.
+    This also generates a fresh access code for this client + this tenant's realm.
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">11</div>
+  <div class="step-body">
+    <strong>Log a user in from your backend.</strong><br/>
+    <code>POST /auth/login</code> with header <code>x-cr-access-code: &lt;the code from step 10&gt;</code>
+    and body <code>{ email, password, clientSecret? }</code> (clientSecret only for
+    Confidential clients). Returns <code>{ accessToken, refreshToken, user }</code>. The
+    access token is a short-lived (1&nbsp;hour) JWT; the refresh token lasts 7 days by default.
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">12</div>
+  <div class="step-body">
+    <strong>Validate a token on every protected request.</strong><br/>
+    Access tokens are signed with a secret this API keeps to itself — there's no public key
+    or introspection endpoint, so a tenant backend can't verify the signature on its own.
+    Call <code>GET /auth/me</code> with <code>Authorization: Bearer &lt;accessToken&gt;</code>;
+    a 200 response with the user object means the token is valid.
+  </div>
+</div>
+
+<div class="step">
+  <div class="num">13</div>
+  <div class="step-body">
+    <strong>Refresh and log out.</strong><br/>
+    When the access token expires, <code>POST /auth/refresh</code> with
+    <code>{ refreshToken }</code> returns a new access token (and rotates the refresh token).
+    <code>POST /auth/logout</code> ends the session and revokes its tokens.
+  </div>
+</div>
+
+<div class="note">
+  In short: treat this API as the single source of truth for auth — the tenant's backend
+  proxies login/refresh calls to it and calls <code>/auth/me</code> to check a token, rather
+  than trying to verify tokens itself.
+</div>
+
+<div class="footer">
+  Identity &amp; Access Management — internal onboarding reference.
+</div>
+
+</div>
+</body>
+</html>
