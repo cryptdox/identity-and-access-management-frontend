@@ -1,4 +1,5 @@
-import { Trash2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Trash2, Pencil } from 'lucide-react'
 import { useCreatePermissionMutation, useDeletePermissionMutation } from '@/api/endpoints/permission.api'
 import { useDeleteResourceMutation } from '@/api/endpoints/resource.api'
 import { confirm } from '@/common/utils/confirm'
@@ -6,10 +7,10 @@ import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
 import { useCan } from '@/common/hooks/usePermission'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
+import { sortActions } from '@/features/resources/utils/sortActions'
+import { EditResourceModal } from '@/features/resources/components/EditResourceModal'
 import type { Resource } from '@/features/resources/resource.types'
 import type { Permission } from '@/features/roles/role.types'
-
-const ACTIONS = Object.values(TypeAction)
 
 interface ResourceRow {
   resource: Resource
@@ -31,9 +32,14 @@ export function ResourceMatrixTable({
   const [createPermission] = useCreatePermissionMutation()
   const [deletePermission] = useDeletePermissionMutation()
   const [deleteResource] = useDeleteResourceMutation()
+  const [editingResource, setEditingResource] = useState<Resource | null>(null)
   const toast = useToast()
 
-  async function toggle(resourceId: string, action: TypeAction, existing?: Permission) {
+  // Each resource can have its own custom action list now — columns are the
+  // union of every action across the rows currently shown, not a fixed enum.
+  const columns = useMemo(() => sortActions(rows.flatMap(({ resource }) => resource.actions)), [rows])
+
+  async function toggle(resourceId: string, action: string, existing?: Permission) {
     try {
       if (existing) {
         await deletePermission({ permissionId: existing.permissionId, clientIdInternal }).unwrap()
@@ -68,7 +74,7 @@ export function ResourceMatrixTable({
           <tr className="border-b border-border bg-surface-alt/50">
             <th className="px-4 py-2.5 font-medium text-text-secondary">Resource</th>
             <th className="px-3 py-2.5 font-medium text-text-secondary">Type</th>
-            {ACTIONS.map((action) => (
+            {columns.map((action) => (
               <th key={action} className="px-3 py-2.5 text-center font-medium text-text-secondary">
                 {action}
               </th>
@@ -81,7 +87,14 @@ export function ResourceMatrixTable({
             <tr key={resource.resourceId} className="border-b border-border last:border-0">
               <td className="px-4 py-2 font-medium text-text">{resource.name}</td>
               <td className="px-3 py-2 text-text-secondary">{resource.type}</td>
-              {ACTIONS.map((action) => {
+              {columns.map((action) => {
+                if (!resource.actions.includes(action)) {
+                  return (
+                    <td key={action} className="px-3 py-2 text-center">
+                      <span className="text-text-secondary/40">—</span>
+                    </td>
+                  )
+                }
                 const existing = permissionByAction.get(action)
                 return (
                   <td key={action} className="px-3 py-2 text-center">
@@ -97,19 +110,30 @@ export function ResourceMatrixTable({
               })}
               {canManage && (
                 <td className="px-3 py-2 text-center">
-                  <button
-                    onClick={() => void handleDeleteResource(resource.resourceId, resource.name)}
-                    className="rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-danger/10 hover:text-danger"
-                    aria-label="Delete resource"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      onClick={() => setEditingResource(resource)}
+                      className="rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-primary/10 hover:text-primary"
+                      aria-label="Edit resource"
+                    >
+                      <Pencil className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => void handleDeleteResource(resource.resourceId, resource.name)}
+                      className="rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-danger/10 hover:text-danger"
+                      aria-label="Delete resource"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </td>
               )}
             </tr>
           ))}
         </tbody>
       </table>
+
+      <EditResourceModal resource={editingResource} onClose={() => setEditingResource(null)} clientIdInternal={clientIdInternal} />
     </div>
   )
 }

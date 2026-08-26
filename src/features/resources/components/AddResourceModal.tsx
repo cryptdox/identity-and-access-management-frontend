@@ -7,9 +7,9 @@ import { Button } from '@/common/components/ui/Button'
 import { useToast } from '@/common/hooks/useToast'
 import { getApiErrorMessage } from '@/common/utils/apiError'
 import { TypeAction, TypeResource } from '@/api/types/enums.types'
+import { ResourceActionsPicker } from '@/features/resources/components/ResourceActionsPicker'
 
 const TYPE_OPTIONS = Object.values(TypeResource).map((t) => ({ value: t, label: t }))
-const ACTIONS = Object.values(TypeAction)
 
 export function AddResourceModal({
   open,
@@ -24,16 +24,7 @@ export function AddResourceModal({
   const toast = useToast()
   const [name, setName] = useState('')
   const [type, setType] = useState<TypeResource>(TypeResource.API_ENDPOINT)
-  const [actions, setActions] = useState<Set<TypeAction>>(new Set([TypeAction.READ]))
-
-  function toggleAction(action: TypeAction) {
-    setActions((prev) => {
-      const next = new Set(prev)
-      if (next.has(action)) next.delete(action)
-      else next.add(action)
-      return next
-    })
-  }
+  const [actions, setActions] = useState<Set<string>>(new Set([TypeAction.READ]))
 
   async function handleSubmit() {
     try {
@@ -61,22 +52,7 @@ export function AddResourceModal({
           value={type}
           onChange={(e) => setType(e.target.value as TypeResource)}
         />
-        <div>
-          <p className="mb-1.5 text-sm font-medium text-text">Initial actions</p>
-          <div className="flex flex-wrap gap-3">
-            {ACTIONS.map((action) => (
-              <label key={action} className="flex items-center gap-1.5 text-sm text-text-secondary">
-                <input
-                  type="checkbox"
-                  checked={actions.has(action)}
-                  onChange={() => toggleAction(action)}
-                  className="size-4 rounded border-border text-primary focus:ring-primary/30"
-                />
-                {action}
-              </label>
-            ))}
-          </div>
-        </div>
+        <ResourceActionsPicker actions={actions} onChange={setActions} />
         <Button loading={isLoading} disabled={!name || actions.size === 0} onClick={() => void handleSubmit()}>
           Create resource
         </Button>

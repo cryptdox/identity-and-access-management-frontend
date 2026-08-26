@@ -1,9 +1,12 @@
-import type { TypeAction, TypeResource } from '@/api/types/enums.types'
+import type { TypeResource } from '@/api/types/enums.types'
 
 export interface Resource {
   resourceId: string
   name: string
   type: TypeResource
+  // Custom, per-resource action-type list — free-form strings, not limited to
+  // the fixed TypeAction set.
+  actions: string[]
   realmId?: string
   clientId?: string
   createdAt?: string
@@ -12,7 +15,7 @@ export interface Resource {
 
 export interface PermissionInput {
   type: TypeResource
-  actions: TypeAction[]
+  actions: string[]
 }
 
 export interface ResourceInput {
@@ -25,11 +28,19 @@ export interface CreateResourceDto {
   resources: ResourceInput[]
 }
 
+export interface UpdateResourceDto {
+  name?: string
+  type?: TypeResource
+  // Full replacement of the resource's action list — actions removed here
+  // cascade-delete their Permission (and RolePermission) rows server-side.
+  actions?: string[]
+}
+
 export interface BulkUpdateResourceItem {
   resourceId: string
   name?: string
   type?: TypeResource
-  actions?: TypeAction[]
+  actions?: string[]
 }
 
 export interface BulkUpdateResourceDto {

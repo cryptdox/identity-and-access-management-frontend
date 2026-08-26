@@ -8,9 +8,8 @@ import { Skeleton } from '@/common/components/ui/Skeleton'
 import { useCan } from '@/common/hooks/usePermission'
 import { ClientOwnerOnlyNotice } from '@/common/components/ui/ClientOwnerOnlyNotice'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
+import { sortActions } from '@/features/resources/utils/sortActions'
 import type { Role } from '@/features/roles/role.types'
-
-const ACTIONS = Object.values(TypeAction)
 
 /** Assigns EXISTING permission records to a role — creating new resource/permission
  * definitions is Phase 4's job (the Resource x Permission matrix screen). Saving here
@@ -28,9 +27,11 @@ export function RolePermissionPanel({ role }: { role: Role }) {
   const [selected, setSelected] = useState(() => new Set(role.permissions.map((p) => p.permissionId)))
   const [dirty, setDirty] = useState(false)
 
+  const permissions = data?.data?.items ?? []
+
   const grouped = useMemo(() => {
     const byResource = new Map<string, { resourceName: string; resourceType: string; cells: Map<string, string> }>()
-    for (const perm of data?.data?.items ?? []) {
+    for (const perm of permissions) {
       const key = perm.resource.resourceId
       if (!byResource.has(key)) {
         byResource.set(key, { resourceName: perm.resource.name, resourceType: perm.resource.type, cells: new Map() })
@@ -38,7 +39,12 @@ export function RolePermissionPanel({ role }: { role: Role }) {
       byResource.get(key)!.cells.set(perm.action, perm.permissionId)
     }
     return Array.from(byResource.values())
-  }, [data])
+  }, [permissions])
+
+  // Columns are the union of every distinct action actually present in this
+  // client's permissions, not a fixed enum — a resource's custom actions
+  // (see resource.types.ts) need to show up here too.
+  const ACTIONS = useMemo(() => sortActions(permissions.map((p) => p.action)), [permissions])
 
   function toggle(permissionId: string) {
     setDirty(true)

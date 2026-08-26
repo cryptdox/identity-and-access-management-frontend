@@ -1,4 +1,4 @@
-import type { ResourceName, TypeAction, TypeResource } from '@/api/types/enums.types'
+import type { ResourceName, TypeResource } from '@/api/types/enums.types'
 
 export interface PermissionResource {
   resourceId: string
@@ -9,7 +9,9 @@ export interface PermissionResource {
 
 export interface Permission {
   permissionId: string
-  action: TypeAction
+  // Free-form string, not the fixed TypeAction set — a resource's own custom
+  // `actions` list (see resource.types.ts) can name any action.
+  action: string
   resourceId: string
   resource: PermissionResource
 }

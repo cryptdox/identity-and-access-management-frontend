@@ -1,7 +1,6 @@
 import { baseApi } from '@/api/baseApi'
 import type { ApiResponse, ListQueryParams, PaginatedData } from '@/api/types/common.types'
 import type { Permission } from '@/features/roles/role.types'
-import type { TypeAction } from '@/api/types/enums.types'
 
 export const permissionApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -13,11 +12,20 @@ export const permissionApi = baseApi.injectEndpoints({
       // Route param is literally named :clientId, but the backend treats it as the
       // internal id (permission.service.ts's getByClientId) — not the external clientId string.
       query: ({ clientIdInternal, ...params }) => ({ url: `/permission/client/${clientIdInternal}`, method: 'GET', params }),
-      providesTags: (_result, _error, { clientIdInternal }) => [{ type: 'Permission', id: clientIdInternal }],
+      // Also provide the shared 'LIST' tag: several resource.api.ts mutations
+      // (create/bulkUpdate/delete a resource) only know the client's external
+      // clientId, not this internal id, so they can only invalidate 'LIST' —
+      // without this, this query stayed stale after any of those, making the
+      // matrix show a checkbox as unchecked when the backend already created
+      // that Permission row (next click then 500s with "already exists").
+      providesTags: (_result, _error, { clientIdInternal }) => [
+        { type: 'Permission', id: clientIdInternal },
+        { type: 'Permission', id: 'LIST' },
+      ],
     }),
     createPermission: builder.mutation<
       ApiResponse<Permission>,
-      { action: TypeAction; resourceId: string; clientIdInternal: string }
+      { action: string; resourceId: string; clientIdInternal: string }
     >({
       query: ({ action, resourceId }) => ({ url: '/permission', method: 'POST', data: { action, resourceId } }),
       invalidatesTags: (_result, _error, { clientIdInternal }) => [

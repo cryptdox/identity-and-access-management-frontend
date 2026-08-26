@@ -4,6 +4,7 @@ import type {
   BulkUpdateResourceDto,
   CreateResourceDto,
   Resource,
+  UpdateResourceDto,
 } from '@/features/resources/resource.types'
 
 export const resourceApi = baseApi.injectEndpoints({
@@ -30,11 +31,36 @@ export const resourceApi = baseApi.injectEndpoints({
     }),
     bulkUpdateResources: builder.mutation<ApiResponse<unknown>, BulkUpdateResourceDto & { clientIdInternal: string }>({
       query: ({ clientIdInternal: _clientIdInternal, ...body }) => ({ url: '/resource/bulk', method: 'PUT', data: body }),
-      invalidatesTags: (_result, _error, { clientIdInternal }) => [{ type: 'Resource', id: clientIdInternal }],
+      // Additively creates Permission rows for any newly-listed actions —
+      // the Permission cache is stale too, same as create above.
+      invalidatesTags: (_result, _error, { clientIdInternal }) => [
+        { type: 'Resource', id: clientIdInternal },
+        { type: 'Permission', id: 'LIST' },
+      ],
+    }),
+    // Editing a resource's actions can remove some — the backend cascade-deletes
+    // their Permission rows, so the Permission cache is stale too, same as delete below.
+    updateResource: builder.mutation<ApiResponse<Resource>, UpdateResourceDto & { resourceId: string; clientIdInternal: string }>({
+      query: ({ resourceId, clientIdInternal: _clientIdInternal, ...body }) => ({
+        url: `/resource/${resourceId}`,
+        method: 'PUT',
+        data: body,
+      }),
+      invalidatesTags: (_result, _error, { clientIdInternal }) => [
+        { type: 'Resource', id: clientIdInternal },
+        { type: 'Permission', id: 'LIST' },
+      ],
     }),
     deleteResource: builder.mutation<ApiResponse<null>, { resourceId: string; clientIdInternal: string }>({
       query: ({ resourceId }) => ({ url: `/resource/${resourceId}`, method: 'DELETE' }),
-      invalidatesTags: (_result, _error, { clientIdInternal }) => [{ type: 'Resource', id: clientIdInternal }],
+      // Cascade-deletes the resource's Permission rows server-side — the
+      // Permission cache is stale too, same as create/update above. Without
+      // this, a later resource reusing the same name+type shows its
+      // permission checkboxes as unchecked while the DB already has them.
+      invalidatesTags: (_result, _error, { clientIdInternal }) => [
+        { type: 'Resource', id: clientIdInternal },
+        { type: 'Permission', id: 'LIST' },
+      ],
     }),
   }),
 })
@@ -43,5 +69,6 @@ export const {
   useListResourcesQuery,
   useCreateResourcesMutation,
   useBulkUpdateResourcesMutation,
+  useUpdateResourceMutation,
   useDeleteResourceMutation,
 } = resourceApi
