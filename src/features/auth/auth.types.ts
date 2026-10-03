@@ -11,6 +11,10 @@ export interface LoginDto {
   clientSecret?: string
   email: string
   password: string
+  /** When true the backend resolves `redirectUri` against the client's
+   * LOGIN_CALLBACK list and returns the approved one in the response. */
+  redirect?: boolean
+  redirectUri?: string
 }
 
 export interface LoginRequest extends LoginDto {
@@ -114,6 +118,7 @@ export interface LoginResponseDto {
   accessToken: string
   refreshToken: string
   user: UserProfileDto
+  redirectUri?: string
 }
 
 export interface RefreshTokenResponseDto {

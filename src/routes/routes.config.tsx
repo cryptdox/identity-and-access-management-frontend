@@ -6,6 +6,7 @@ import { withPermission, withPermissionOrSelfService } from '@/common/hocs/withP
 import { withMasterRealmUser } from '@/common/hocs/withMasterRealmUser'
 import { ResourceName, TypeAction } from '@/api/types/enums.types'
 import LoginPage from '@/features/auth/pages/LoginPage'
+import ClientLoginPage from '@/features/auth/pages/ClientLoginPage'
 import VerifyEmailPage from '@/features/auth/pages/VerifyEmailPage'
 import ProfilePage from '@/features/auth/pages/ProfilePage'
 import HomeRedirect from '@/common/pages/HomeRedirect'
@@ -67,6 +68,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      {/* Hosted login for external client apps — redirects back, never enters the console. */}
+      <Route path="/sso/login" element={<ClientLoginPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
 

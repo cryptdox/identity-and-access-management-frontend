@@ -11,12 +11,20 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
+/** /sso/login?theme=light|dark — the hosted login follows the client app it's
+ * shown in, without touching this console's saved preference. */
+function embeddedThemeOverride(): ThemeMode | null {
+  if (!window.location.pathname.startsWith('/sso/')) return null
+  const theme = new URLSearchParams(window.location.search).get('theme')
+  return theme === 'light' || theme === 'dark' ? theme : null
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const mode = useAppSelector((state) => state.preferences.themeMode)
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    document.documentElement.dataset.theme = mode
+    document.documentElement.dataset.theme = embeddedThemeOverride() ?? mode
   }, [mode])
 
   const value = useMemo<ThemeContextValue>(
