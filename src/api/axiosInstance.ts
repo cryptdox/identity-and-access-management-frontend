@@ -52,7 +52,9 @@ function forceSessionExpired() {
   tokenManager.clear()
   setRememberDevice(false)
   store.dispatch(authActions.sessionExpired())
-  if (!window.location.pathname.startsWith('/login')) {
+  // /sso/* pages (client-app sign-in, often in an iframe) must stay where they are.
+  const path = window.location.pathname
+  if (!path.startsWith('/login') && !path.startsWith('/sso/')) {
     window.location.href = '/login?sessionExpired=1'
   }
 }

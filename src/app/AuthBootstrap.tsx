@@ -13,7 +13,16 @@ import { SplashScreen } from '@/common/components/feedback/SplashScreen'
  * before rendering the app — the in-memory access token and permissions are never
  * resurrected stale from storage, only ever freshly fetched.
  */
+/** Client-app sign-in pages (/sso/*) never use the console session: they must not
+ * show the console splash, rotate its refresh token, or bounce to /login. */
+export const isSsoPath = () => window.location.pathname.startsWith('/sso/')
+
 export function AuthBootstrap({ children }: { children: ReactNode }) {
+  if (isSsoPath()) return <>{children}</>
+  return <ConsoleAuthBootstrap>{children}</ConsoleAuthBootstrap>
+}
+
+function ConsoleAuthBootstrap({ children }: { children: ReactNode }) {
   const refreshToken = useAppSelector((state) => state.auth.refreshToken)
   const dispatch = useAppDispatch()
   const [refresh] = useRefreshMutation()
